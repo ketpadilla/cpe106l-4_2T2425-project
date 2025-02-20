@@ -2,4 +2,6 @@ from flask import Flask
 
 app = Flask(__name__)
 
-#! TODO
+@app.route("/")
+def main():
+    return "<p>Hello, World!</p>"
