@@ -1,17 +1,31 @@
+{% from "icons.html" import hero_icon %}
 {% extends "layout.html" %}
 
 {% block title %}
   {% if title %}
-  {{title}}
+  {{ title }}
   {% endif %}
 {% endblock %}
 
 {% block content %}
-  <h1>TRACKABITE</h1>
-  <p>Insert Content
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-  </p>
+<div class="container d-flex justify-content-end py-5">
+  <div class="container pt-5">
+    <div class="row d-flex align-items-center">
+      <div class="col text-right pr-5 d-flex flex-column justify-content-center">
+        <h1>Track Your Calories, Transform Your Habits</h1>
+        <p>Seamlessly monitor your BMI, calorie intake, and favorite meals with a user-friendly diet tracker designed for accuracy and ease.</p>
+        
+        <div class="d-flex justify-content-end">
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+            Get Started
+          </a>
+        </div>
+      </div>
+
+      <div class="col d-flex justify-content-center">
+        {{ hero_icon() }}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
