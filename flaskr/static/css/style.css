@@ -1,19 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Sofia%20Sans:700|Libre%20Franklin:400');
 
 :root {
-  --primary: #879550;
-  --secondary: #AB6A5F;
-  --accent: #596232;
-  --background: #B8CCBF;
-  --text: #344B3C;
-}
-
-.dark-mode {
-  --primary: #A1AF6A;
-  --secondary: #A06054;
-  --accent: #C4CD9D;
-  --background: #33473A;
-  --text: #B5CCBD;
+  --text: #e6e3dd;
+  --text-muted: #b3aea5;
+  --background: #344940;
+  --primary: #669375;
+  --secondary: #6C7740;
+  --tertiary: #4b6a5c;
+  --accent: #AB6A5F;  
+  --dark: #2B3B30;
 }
 
 body {
@@ -45,4 +40,10 @@ h5 {font-size: 1.066rem; /* 17.12px */}
 
 small {font-size: 0.600rem; /* 9.6px */}
 
+a {
+  color: rgb(119, 195, 253); 
+}
 
+a:hover {
+  color: rgb(119, 195, 253);
+}

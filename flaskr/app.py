@@ -11,10 +11,14 @@ def index(page_title = WEB_NAME):
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        session['user'] = "test_user"
-        return redirect(url_for('profile', username=session['user']))
-    return render_template('login.html', title="Login") 
+  if request.method == 'POST':
+    session['user'] = "test_user"
+    return redirect(url_for('profile', username=session['user']))
+  return render_template('login.html', title="Login") 
+
+@app.route("/register")
+def register():
+  return render_template('register.html', title="Register")
 
 @app.route("/logout")
 def logout():
