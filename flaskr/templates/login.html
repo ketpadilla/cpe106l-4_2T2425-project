@@ -7,11 +7,24 @@
 {% endblock %}
 
 {% block content %}
-  <h1>LOGIN</h1>
-  <p>Insert Content
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-  </p>
-{% endblock %}
+  <div class = "card-wrapper">
+    <div class="card">
+      <form name="login_form">
+        <label for="email">Email</label>
+        <input type="email" name="email" class="field" required>
+
+        <label for="password">Password</label>
+        <input type="password" name="password" class="field" required>
+
+        <p class="error error--hidden"></p>
+
+        <input type="submit" value="LOG IN" class="btn btn-primary">
+      </form>
+    </div>
+  </div>
+  
+  <div class="text-center d-flex align-items-center justify-content-center">
+    Not registered?&nbsp;
+    <a class="ms-1" href="/register">Sign up now</a>
+  </div>  
+  {% endblock %}
