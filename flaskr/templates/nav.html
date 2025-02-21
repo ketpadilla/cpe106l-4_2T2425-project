@@ -1,0 +1,50 @@
+{% from "icons.html" import moon_icon, sun_icon %}
+
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand" href="/">
+    Logo
+  </a>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/search-food">Search Food</a>
+      </li>
+
+      {% if session.get('user') %}
+        <li class="nav-item">
+          <a class="nav-link" href="/calories">Daily Calorie Intake</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/history">View History</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('profile', username=session['user']) }}">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">Logout</a>
+        </li>
+      {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li>        
+      {% endif %}
+
+      <li class="nav-item d-flex align-items-center">
+        <button class="btn dark-mode-toggle" aria-label="Toggle Dark Mode">
+          <span class="dark-mode-icon">
+            {{ moon_icon() }}
+          </span>
+        </button>
+      </li>      
+    </ul>
+  </div>
+</nav>
+

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>    
+    {% endblock %}
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom-bootstrap.css') }}">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  </head>
+
+  <body>
+    {% include 'nav.html' %}  {# Include the navbar #}
+
+    <div id="content">
+      {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+      {% block footer %}
+      <p>Footer Content</p>
+      {% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- <script src="{{ url_for('static', filename='dark-mode.js') }}"></script> -->
+    <script>
+      // Load SVG icons from `svg-icons.html`
+      fetch("svg-icons.html")
+          .then(response => response.text())
+          .then(data => {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(data, "text/html");
+  
+              // Get the correct icon
+              const icon = doc.getElementById("moon-icon"); // Change to "sun-icon" if needed
+              document.querySelector(".dark-mode-icon").innerHTML = icon.innerHTML;
+          })
+          .catch(error => console.error("Error loading SVG icons:", error));
+  </script>
+  </body>
+</html>

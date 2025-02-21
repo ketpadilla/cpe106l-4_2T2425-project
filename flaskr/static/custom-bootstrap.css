@@ -1,0 +1,30 @@
+@import url('style.css');
+
+.navbar {
+  font-family: 'Libre Franklin';
+  font-weight: 700;
+}
+
+.navbar .nav-item .nav-link:hover {
+  color: var(--secondary);
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: var(--primary); 
+  border-color: var(--primary); 
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+}
+
+.btn.dark-mode-toggle {
+  border: none;
+  box-shadow: none;
+  padding: 0.5rem 1rem;
+}
+
+.dark-mode-toggle:hover {
+  color: var(--secondary) !important;
+}

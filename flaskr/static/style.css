@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css?family=Sofia%20Sans:700|Libre%20Franklin:400');
+
+:root {
+  --primary: #879550;
+  --secondary: #AB6A5F;
+  --accent: #596232;
+  --background: #B8CCBF;
+  --text: #344B3C;
+}
+
+.dark-mode {
+  --primary: #A1AF6A;
+  --secondary: #A06054;
+  --accent: #C4CD9D;
+  --background: #33473A;
+  --text: #B5CCBD;
+}
+
+body {
+  background-color: var(--background); 
+  color: var(--text);
+  font-family: 'Libre Franklin';
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Sofia Sans';
+  font-weight: 700;
+}
+
+html {font-size: 100%;} /* 16px */
+
+h1 {font-size: 3.366rem; /* 53.92px */}
+
+h2 {font-size: 2.525rem; /* 40.32px */}
+
+h3 {font-size: 1.894rem; /* 30.24px */}
+
+h4 {font-size: 1.421rem; /* 22.72px */}
+
+h5 {font-size: 1.066rem; /* 17.12px */}
+
+small {font-size: 0.600rem; /* 9.6px */}
+
+
