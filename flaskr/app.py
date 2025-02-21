@@ -15,29 +15,29 @@ def index(page_title=WEB_NAME):
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        session['user'] = "test_user"
-        return redirect(url_for('profile', username=session['user']))
-    return render_template('login.html', title="Login")
+  if request.method == 'POST':
+    session['user'] = "test_user"
+    return redirect(url_for('profile', username=session['user']))
+  return render_template('login.html', title="Login")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        return User().signup()
-    return render_template('register.html', title="Register")
+  if request.method == 'POST':
+    return User().signup()
+  return render_template('register.html', title="Register")
 
 @app.route("/logout")
 def logout():
-    session.pop('user', None)
-    return redirect(url_for('login'))
+  session.pop('user', None)
+  return redirect(url_for('login'))
 
 @app.route("/user/<username>")
 def profile(username):
-    return f"{escape(username)}'s Profile"
+  return f"{escape(username)}'s Profile"
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return render_template('page_not_found.html', title='404'), 404
+  return render_template('page_not_found.html', title='404'), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+  app.run(debug=True)
