@@ -22,8 +22,8 @@ def register():
 
 @app.route("/logout")
 def logout():
-    session.pop('user', None)
-    return redirect(url_for('login'))
+  session.pop('user', None)
+  return redirect(url_for('login'))
   
 @app.route("/user/<username>")
 def profile(username):
