@@ -1,42 +1,86 @@
 {% extends "layout.html" %}
 
-{% block title %}
-  {% if title %}
-  {{title}}
-  {% endif %}
-{% endblock %}
+{% block title %}User Profile{% endblock %}
 
 {% block content %}
-
-  <!-- TODO: PROFILE -->
-  <div class="card-wrapper">
-
-    <div class="card">
-
-      <h1 class="center">Dashboard</h1>
-      <p class="center">You are currently logged in.</p>
-
-      <div class="center">
-        <a href="/user/signout" class="btn btn--secondary">Sign Out</a>
+  <div class="container py-5">
+    <div class="row justify-content-center text-center mb-3">
+      <div class="col">
+        <h2 class="mb-1">Your Profile</h2>
+        <p class="text-muted">Manage and update your personal information.</p>
       </div>
-    
     </div>
 
-    <div class="card">
+    <form id="profileForm" method="POST" action="/update-profile/">
+      <div class="row justify-content-center g-2">
+        <div class="col-auto mb-3">
+          <div class="card shadow-lg">
+            <div class="card-body">
+              <h5 class="card-title">Personal Details</h5>
+              <hr>
+              <label class="form-label"><strong>Name:</strong></label>
+              <span id="nameText">{{ session['user']['name'] }}</span>
+              <input type="text" id="nameInput" class="form-control d-none" name="name" value="{{ session['user']['name'] }}">
 
-      <h2 class="center">Your Info</h2>
+              <label class="form-label mt-2"><strong>Email:</strong></label>
+              <span id="emailText">{{ session['user']['email'] }}</span>
+              <input type="email" id="emailInput" class="form-control d-none" name="email" value="{{ session['user']['email'] }}">
 
-      <p>
-        <strong>ID:</strong> {{ session['user']['_id'] }}<br>
-        <strong>Name:</strong> {{ session['user']['name'] }}<br>
-        <strong>Email:</strong> {{ session['user']['email'] }}<br>
-        <strong>Weight:</strong> {{ session['user']['weight'] }}<br>
-        <strong>Height:</strong> {{ session['user']['height'] }}<br>
-        <strong>Activity Level:</strong> {{ session['user']['activity_level'] }}
-      </p>
-    
-    </div>
-  
+              <label class="form-label mt-2"><strong>Sex:</strong></label>
+              <span id="sexText">{{ session['user']['sex'].capitalize() }}</span> 
+              <select id="sexSelect" class="form-control d-none" name="sex">
+                <option value="male" {{ "selected" if session['user']['sex'].lower() == "male" else "" }}>Male</option>
+                <option value="female" {{ "selected" if session['user']['sex'].lower() == "female" else "" }}>Female</option>
+              </select>
+
+              <label class="form-label mt-2"><strong>Date of Birth:</strong></label>
+              <span id="dobText">{{ session['user']['dob'] }}</span>
+              <input type="date" id="dobInput" class="form-control d-none" name="dob" value="{{ session['user']['dob'] }}">
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-auto mb-3">
+          <div class="card shadow-lg">
+            <div class="card-body">
+              <h5 class="card-title">Health Details</h5>
+              <hr>
+              <label class="form-label"><strong>Weight (kg):</strong></label>
+              <span id="weightText">{{ session['user']['weight'] }}</span>
+              <input type="number" id="weightInput" class="form-control d-none" name="weight" value="{{ session['user']['weight'] }}" step="0.1">
+
+              <label class="form-label mt-2"><strong>Height (cm):</strong></label>
+              <span id="heightText">{{ session['user']['height'] }}</span>
+              <input type="number" id="heightInput" class="form-control d-none" name="height" value="{{ session['user']['height'] }}">
+              
+              <label class="form-label mt-2"><strong>BMI:</strong></label>
+              <span id="heightText">{{ session['user']['bmi'] | round(2) }}</span>
+
+              <label class="form-label mt-2"><strong>Activity Level:</strong></label>
+              <span id="activityLevelText">{{ session['user']['activity_level'].title() }}</span> 
+              <select id="activityLevelSelect" class="form-control d-none" name="activity_level">
+                <option value="sedentary" {{ "selected" if session['user']['activity_level'].lower() == "sedentary" else "" }}>Sedentary</option>
+                <option value="light_activity" {{ "selected" if session['user']['activity_level'].lower() == "lightly active" else "" }}>Lightly Active</option>
+                <option value="moderate_activity" {{ "selected" if session['user']['activity_level'].lower() == "moderately active" else "" }}>Moderately Active</option>
+                <option value="very_active" {{ "selected" if session['user']['activity_level'].lower() == "very active" else "" }}>Very Active</option>
+                <option value="extremely_active" {{ "selected" if session['user']['activity_level'].lower() == "extremely active" else "" }}>Extremely Active</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row justify-content-center mt-4">
+        <div class="col-md-8 text-center">
+          <button type="button" id="editButton" class="btn btn-primary w-50" onclick="enableEditing()">Edit Profile</button>
+          <button type="submit" id="saveButton" class="btn btn-success w-50 mt-2 d-none">Save Changes</button>
+          <button type="button" id="cancelButton" class="btn btn-danger w-50 mt-2 d-none" onclick="disableEditing()">Cancel</button>
+        </div>
+      </div>
+    </form>
+
+    <p id="statusMessage" class="text-center mt-3"></p>
   </div>
 
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 {% endblock %}

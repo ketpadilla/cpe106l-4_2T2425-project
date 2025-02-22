@@ -1,18 +1,7 @@
 from flask import Flask, session, url_for, redirect, render_template, request, redirect
-from functools import wraps
 from markupsafe import escape
 from .user.models import User
-
-def login_required(f):
-  @wraps(f)
-  def wrap(*args, **kwargs):
-    if 'logged_in' in session:
-      return f(*args, **kwargs)
-    else: 
-      print('Not logged in. Returning to Home Page')
-      return redirect('/')
-
-  return wrap
+from .utils import login_required 
 
 def configure_routes(app, WEB_NAME):
   @app.route("/")
@@ -27,7 +16,6 @@ def configure_routes(app, WEB_NAME):
         return render_template('sign-in.html', title="Sign In", error=result[0]['error'])
       return redirect(url_for('profile', username=session['user']['name']))
     return render_template('sign-in.html', title="Sign In")
-
 
   @app.route("/sign-up/", methods=['GET', 'POST'])
   def register():
@@ -47,6 +35,12 @@ def configure_routes(app, WEB_NAME):
   @login_required
   def profile(username):
     return render_template('user.html', title=f"{username}'s Profile", username=username)
+
+  @app.route("/update-profile/", methods=['POST'])
+  @login_required
+  def update_profile():
+      User().update_profile()
+      return redirect(url_for('profile', username=session['user']['name']))
 
   @app.route("/bmi-calculator/")
   def bmi_calculator():
