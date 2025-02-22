@@ -1,19 +1,19 @@
-$("form[name=login_form]").submit(function(e) {
-  e.preventDefault();
+$("form[name=signup_form]").submit(function(e) {
+    var $form = $(this);
+    var data = $form.serialize();
 
-  var $form = $(this);
-  var data = $form.serialize();
+    $.ajax({
+        url: "/sign-up/",
+        type: "POST",
+        data: data,
+        dataType: "json",
+        success: function(resp) {
+            console.log(resp);
+        },
+        error: function(resp) {
+            console.log("Error:", resp);
+        }
+    });
 
-  $.ajax({
-    url: "/sign-in/",
-    type: "POST",
-    data: data,
-    dataType: "json",
-    success: function(resp) {
-      window.location.href = "/user/" + resp.name + "/";
-    },
-    error: function(resp) {
-      $(".error-message").text(resp.responseJSON.error).show();
-    }
-  });
+    e.preventDefault();
 });

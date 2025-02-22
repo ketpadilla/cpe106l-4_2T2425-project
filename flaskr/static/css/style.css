@@ -104,9 +104,3 @@ a:hover {
     border-radius: 0;
   }
 }
-
-@media (max-width: 2400px) {
-  .force-wrap {
-    flex-wrap: wrap !important;
-  }
-}
