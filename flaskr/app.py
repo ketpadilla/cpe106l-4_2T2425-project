@@ -9,15 +9,22 @@ load_dotenv()
 app = Flask(__name__)
 
 uri = os.getenv("MONGO_URI")
+database = os.getenv("DATABASE")
+
 client = MongoClient(uri, server_api=ServerApi('1'))
+db = client[database]
 
 @app.before_request
 def check_db_connection():
-    try:
-        client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
-    except Exception as e:
-        print(f"Error connecting to MongoDB: {e}")
+  try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+
+    collections = db.list_collection_names()
+    print("Collections in the database:", collections)
+
+  except Exception as e:
+    print(f"Error: {e}")
 
 from .routes import configure_routes
 configure_routes(app, WEB_NAME='Trackabite')

@@ -17,7 +17,9 @@ def configure_routes(app, WEB_NAME):
   @app.route("/sign-up/", methods=['GET', 'POST'])
   def register():
     if request.method == 'POST':
-      User().sign_up()
+      result = User().sign_up()
+      if result[1] == 400:
+        return render_template('sign-up.html', title="Sign Up", error=result[0]['error'])
       return redirect(url_for('index'))
     return render_template('sign-up.html', title="Sign Up")
 

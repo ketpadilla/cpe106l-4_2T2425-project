@@ -4,3 +4,4 @@ Group 3's Project in partial fulfillments of CPE106L-4 for Term 2 of A.Y.2024-20
 To Fix:
 Implement dark mode toggle
 Fix text mute on default texts
+Include password and email validation

@@ -1,11 +1,13 @@
 from flask import Flask, jsonify, request
 from passlib.hash import pbkdf2_sha256
-import uuid
+from bson import ObjectId
+from ..app import db
 
 class User:
   def sign_up(self):
+    valid_object_id = str(ObjectId())
     user = {
-      "_id": uuid.uuid4().hex,
+      "_id": valid_object_id,
       "name": request.form.get('name'),
       "email": request.form.get('email'),
       "password": request.form.get('password'),
@@ -17,5 +19,11 @@ class User:
     }
 
     user['password'] = pbkdf2_sha256.encrypt(user['password'])
-    print(user) 
-    return jsonify(user), 200
+    
+    if db.users.find_one({"email": user['email']}):
+      return {"error": "Email address already in use"}, 400
+
+    if db.users.insert_one(user):
+      return jsonify(user), 200
+
+    return {"error": "Signup failed"}, 400

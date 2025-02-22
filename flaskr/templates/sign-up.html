@@ -10,6 +10,13 @@
   <div class="card-wrapper">
     <div class="card">
       <h3> Create an Account</h3>
+
+      {% if error %}
+        <div class="error-message">
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
+
       <form name="signup_form" method="post">
         <label for="name">Name <span class="required">*</span></label>
         <input type="text" name="name" class="field" required>
@@ -45,8 +52,6 @@
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
-
-        <p class="error error--hidden"></p>
 
         <input type="submit" value="SIGN UP" class="btn btn-primary">
       </form>

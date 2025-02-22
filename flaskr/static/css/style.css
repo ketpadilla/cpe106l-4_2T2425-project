@@ -62,13 +62,8 @@ a:hover {
 /* ========================= */
 /* FORM STYLES */
 /* ========================= */
-.error--hidden {
-  display: none;
-}
-
-.error {
+.error-message {
   color: red;
-  font-size: 14px;
   display: block;
 }
 
