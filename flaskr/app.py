@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session, redirect, url_for, request
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
@@ -7,6 +7,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.urandom(24)
 
 uri = os.getenv("MONGO_URI")
 database = os.getenv("DATABASE")
@@ -15,7 +16,7 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 db = client[database]
 
 @app.before_request
-def check_db_connection():
+def connect_to_db():
   try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")

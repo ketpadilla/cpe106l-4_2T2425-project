@@ -9,14 +9,18 @@
 {% block content %}
   <div class = "card-wrapper">
     <div class="card">
-      <form name="login_form">
+      {% if error %}
+        <div class="error-message">
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
+    
+      <form name="login_form" method="post">
         <label for="email">Email</label>
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password</label>
         <input type="password" name="password" class="field" required>
-
-        <p class="error error--hidden"></p>
 
         <input type="submit" value="SIGN IN" class="btn btn-primary">
       </form>

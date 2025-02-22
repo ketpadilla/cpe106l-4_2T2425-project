@@ -5,3 +5,4 @@ To Fix:
 Implement dark mode toggle
 Fix text mute on default texts
 Include password and email validation
+Include bmi calculation in registration

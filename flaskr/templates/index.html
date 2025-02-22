@@ -16,7 +16,8 @@
         <p>Seamlessly monitor your BMI, calorie intake, and favorite meals with a user-friendly diet tracker designed for accuracy and ease.</p>
         
         <div class="d-flex justify-content-end">
-          <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+          <a href="{% if 'user' in session %}{{ url_for('calories') }}{% else %}{{ url_for('login') }}{% endif %}" 
+             class="btn btn-primary btn-lg">
             Get Started
           </a>
         </div>
