@@ -1,0 +1,5 @@
+Flask
+flask-PyMongo
+python-dotenv
+passlib
+markupsafe 

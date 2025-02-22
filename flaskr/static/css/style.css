@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Sofia%20Sans:700|Libre%20Franklin:400');
 
+/* ========================= */
+/* GLOBAL VARIABLES (CSS Variables) */
+/* ========================= */
 :root {
   --text: #e6e3dd;
   --text-muted: #b3aea5;
@@ -11,10 +14,13 @@
   --dark: #2B3B30;
 }
 
+/* ========================= */
+/* TYPOGRAPHY STYLES */
+/* ========================= */
 body {
   background-color: var(--background); 
   color: var(--text);
-  font-family: 'Libre Franklin';
+  font-family: 'Libre Franklin', sans-serif;
   font-weight: 400;
   display: flex;
   flex-direction: column;
@@ -22,23 +28,23 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-  font-family: 'Sofia Sans';
+  font-family: 'Sofia Sans', sans-serif;
   font-weight: 700;
 }
 
-html {font-size: 100%;} /* 16px */
+html {
+  font-size: 100%; /* 16px */
+}
 
-h1 {font-size: 3.366rem; /* 53.92px */}
+h1 { font-size: 3.366rem; /* 53.92px */ }
+h2 { font-size: 2.525rem; /* 40.32px */ }
+h3 { font-size: 1.894rem; /* 30.24px */ }
+h4 { font-size: 1.421rem; /* 22.72px */ }
+h5 { font-size: 1.066rem; /* 17.12px */ }
 
-h2 {font-size: 2.525rem; /* 40.32px */}
-
-h3 {font-size: 1.894rem; /* 30.24px */}
-
-h4 {font-size: 1.421rem; /* 22.72px */}
-
-h5 {font-size: 1.066rem; /* 17.12px */}
-
-small {font-size: 0.600rem; /* 9.6px */}
+small {
+  font-size: 0.600rem; /* 9.6px */
+}
 
 a {
   color: rgb(119, 195, 253); 
@@ -46,4 +52,60 @@ a {
 
 a:hover {
   color: rgb(119, 195, 253);
+}
+
+.text-muted {
+  color: var(--muted-color) !important;
+  opacity: 0.7;
+}
+
+/* ========================= */
+/* FORM STYLES */
+/* ========================= */
+.error--hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  display: block;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+/* ========================= */
+/* CARD STYLES */
+/* ========================= */
+.card-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 90px 30px;
+}
+
+.card {
+  background-color: var(--dark);
+  border-color: rgba(13, 18, 15, 0.75);
+  box-shadow: inset 0 0 20px 5px rgba(13, 18, 15, 0.25) !important;
+  margin: 0 30px;
+  padding: 3.5em 3em 2em;
+  width: 460px;
+  border-radius: 15px;
+}
+
+@media only screen and (max-width: 520px) {
+  .card-wrapper {
+    padding: 30px 0 0;
+  }
+
+  .card {
+    margin: 0 0 30px;
+    width: 100%;
+    border-radius: 0;
+  }
 }
