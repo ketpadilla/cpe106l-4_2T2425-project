@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  {% if title %}
+    {{ title }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h2 class="text-center">BMI Calculator</h2>
+    <p class="text-center">Enter your weight and height to calculate your BMI.</p>
+
+    <div class="text-center mb-3">
+      <button type="button" class="btn btn-primary btn-sm" onclick="toggleUnits()">Switch to US Units</button>
+      <button type="button" class="btn btn-sm text-decoration-underline" onclick="resetBMI()">Reset</button>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form id="bmiForm">
+          <div class="mb-3">
+            <label for="weight" class="form-label">Weight (kg)</label>
+            <input type="number" id="weight" class="form-control" placeholder="Enter weight" required>
+          </div>
+          <div class="mb-3">
+            <label for="height" class="form-label">Height (cm)</label>
+            <input type="number" id="height" class="form-control" placeholder="Enter height" required>
+          </div>
+          <button type="button" class="btn btn-primary w-100" onclick="calculateBMI()">Calculate BMI</button>
+        </form>
+
+        <div class="mt-4 text-center">
+          <h4>Your BMI: <span id="bmiResult">--</span></h4>
+          <p id="bmiCategory"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/bmi.js') }}"></script>
+{% endblock %}

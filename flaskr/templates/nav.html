@@ -1,0 +1,54 @@
+{% from "icons.html" import logo, moon_icon, sun_icon %}
+
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand" href="/">
+    {{ logo() }}&nbsp;Trackabite
+  </a>
+  
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse pt-2" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/search-food">Search Food</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/bmi-calculator">BMI Calculator</a>
+      </li>
+
+      {% if session.get('user') %}
+        <li class="nav-item">
+          <a class="nav-link" href="/calories">Daily Calorie Intake</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/history">View History</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('profile', username=session['user']['name']) }}">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/sign-out">Sign Out</a>
+        </li>
+      {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/sign-in">Sign In</a>
+        </li>        
+      {% endif %}
+
+      <li class="nav-item d-flex align-items-center">
+        <button class="btn dark-mode-toggle" aria-label="Toggle Dark Mode">
+          <span class="dark-mode-icon">
+            {{ moon_icon() }}
+          </span>
+        </button>
+      </li>      
+    </ul>
+  </div>
+</nav>
+

@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  {% if title %}
+  {{title}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class = "card-wrapper">
+    <div class="card">
+      {% if error %}
+        <div class="error-message">
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
+    
+      <form name="login_form" method="post">
+        <label for="email">Email</label>
+        <input type="email" name="email" class="field" required>
+
+        <label for="password">Password</label>
+        <input type="password" name="password" class="field" required>
+
+        <input type="submit" value="SIGN IN" class="btn btn-primary">
+      </form>
+    </div>
+  </div>
+  
+  <div class="text-center d-flex align-items-center justify-content-center">
+    Not registered?&nbsp;
+    <a class="ms-1" href="/sign-up">Sign up now</a>
+  </div>  
+  {% endblock %}

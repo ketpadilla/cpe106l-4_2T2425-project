@@ -1,0 +1,110 @@
+@import url('style.css');
+
+/* ========================= */
+/* NAVBAR STYLES */
+/* ========================= */
+.navbar {
+  font-family: 'Libre Franklin';
+  font-weight: 700;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-item .nav-link {
+  color: var(--text);
+  transition: background-color 0.2s ease, transform 0.3s ease;
+}
+
+.navbar .navbar-brand:hover,
+.navbar .nav-item .nav-link:hover,
+.dark-mode-toggle:hover {
+  color: var(--accent);
+  transform: scale(1.05);
+}
+
+/* ========================= */
+/* BUTTON STYLES */
+/* ========================= */
+.btn {
+  color: var(--text);
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.btn:active,
+.btn:focus,
+.dark-mode-toggle:active,
+.dark-mode-toggle:focus,
+.navbar .nav-item .nav-link:active,
+.navbar .nav-item .nav-link:focus {
+  transform: scale(1);
+}
+
+.btn-primary {
+  background-color: var(--primary) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary) !important;
+}
+
+.btn.dark-mode-toggle {
+  padding: 0.5rem 1rem;
+  border-color: transparent;
+}
+
+/* ========================= */
+/* FORM STYLES */
+/* ========================= */
+form {
+  transition: opacity 0.15s ease;
+}
+
+form.loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+label {
+  margin-bottom: 2px;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 1px;
+  display: block;
+}
+
+.field {
+  font-family: 'Sofia Sans';
+  margin-bottom: 24px;
+  padding: 11px 16px 9px;
+  width: 100%;
+  font-size: 16px;
+  line-height: 26px;
+  border-radius: 5px;
+  background-color: var(--dark);
+  color: var(--text);
+  border: none;
+  box-shadow: inset 0 0 20px 5px rgba(13, 18, 15, 0.25) !important;
+  display: block;
+}
+
+.field:focus {
+  outline: none;
+}
+
+input[type=submit] {
+  display: block;
+  font-family: 'Sofia Sans';
+  margin: 0 auto 12px;
+  padding: 11px 16px 9px;
+  width: 50%;
+  font-size: 16px;
+  border-radius: 5px;
+}
