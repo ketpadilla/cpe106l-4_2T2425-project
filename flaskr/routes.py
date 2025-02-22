@@ -1,4 +1,5 @@
-from flask import Flask, session, url_for, redirect, render_template, request
+from flask import Flask, session, url_for, redirect, render_template, request, redirect
+from markupsafe import escape
 from .user.models import User
 
 def configure_routes(app, WEB_NAME):
@@ -8,15 +9,19 @@ def configure_routes(app, WEB_NAME):
 
   @app.route("/sign-in/", methods=['GET', 'POST'])
   def login():
-    if request.method == 'P OST':
+    if request.method == 'POST':
       session['user'] = "test_user"
       return redirect(url_for('profile', username=session['user']))
     return render_template('sign-in.html', title="Sign In") 
 
   @app.route("/sign-up/", methods=['GET', 'POST'])
   def register():
-    return User().sign_up()
-    # return render_template('sign-up.html', title="Sign Up")
+    if request.method == 'POST':
+      result = User().sign_up()
+      if result[1] == 400:
+        return render_template('sign-up.html', title="Sign Up", error=result[0]['error'])
+      return redirect(url_for('index'))
+    return render_template('sign-up.html', title="Sign Up")
 
   @app.route("/sign-out/")
   def logout():

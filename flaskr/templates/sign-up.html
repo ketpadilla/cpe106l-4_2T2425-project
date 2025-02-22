@@ -7,22 +7,53 @@
 {% endblock %}
 
 {% block content %}
-  <div class = "card-wrapper">
-    <div class = "card">      
+  <div class="card-wrapper">
+    <div class="card">
       <h3> Create an Account</h3>
-      <form name = "signup_form">
-        <label for = "name">Name</label>
-        <input type = "text" name = "name" class = "field" required>
 
-        <label for = "email">Email</label>
-        <input type = "email" name = "email" class = "field" required>
+      {% if error %}
+        <div class="error-message">
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
 
-        <label for = "password">Password</label>
-        <input type = "password" name = "password" class = "field" required>
+      <form name="signup_form" method="post">
+        <label for="name">Name <span class="required">*</span></label>
+        <input type="text" name="name" class="field" required>
 
-        <p class="error error--hidden"></p>
+        <label for="email">Email <span class="required">*</span></label>
+        <input type="email" name="email" class="field" required>
 
-        <input type="submit" value ="SIGN UP" class = "btn btn-primary">
+        <label for="password">Password <span class="required">*</span></label>
+        <input type="password" name="password" class="field" required>
+
+        <label for="weight">Weight (kg) <span class="required">*</span></label>
+        <input type="number" name="weight" class="field" step="0.1" required>
+
+        <label for="height">Height (cm) <span class="required">*</span></label>
+        <input type="number" name="height" class="field" required>
+
+        <label for="activity_level">Activity Level <span class="required">*</span></label>
+        <select name="activity_level" class="field" required>
+          <option value="" disabled selected hidden>Select your activity level</option>
+          <option value="sedentary">Sedentary</option>
+          <option value="light_activity">Light activity</option>
+          <option value="moderate_activity">Moderate activity</option>
+          <option value="very_active">Very active</option>
+          <option value="extremely_active">Extremely active</option>
+        </select>
+
+        <label for="dob">Date of Birth <span class="required">*</span></label>
+        <input type="date" name="dob" class="field" required>
+
+        <label for="sex">Sex <span class="required">*</span></label>
+        <select name="sex" class="field" required>
+          <option value="" disabled selected hidden>Select your sex</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+
+        <input type="submit" value="SIGN UP" class="btn btn-primary">
       </form>
     </div>
   </div>
