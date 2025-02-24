@@ -7,11 +7,12 @@
   --text: #e6e3dd;
   --text-muted: #b3aea5;
   --background: #344940;
-  --primary: #669375;
-  --secondary: #6C7740;
+  --primary: #6C7740;
+  --secondary: #669375;
   --tertiary: #4b6a5c;
   --accent: #AB6A5F;  
   --dark: #2B3B30;
+  --field-bg: #171A1B;
 }
 
 /* ========================= */
@@ -54,9 +55,20 @@ a:hover {
   color: rgb(119, 195, 253);
 }
 
+hr {
+  border-width: 3px;
+  box-shadow: 0 0 20px 0 rgba(13, 18, 15, 0.25) !important;
+}
+
 .text-muted {
   color: var(--muted-color) !important;
   opacity: 0.7;
+}
+
+.list-group .list-group-item {
+  background-color: var(--field-bg) !important;
+  border: None !important;
+  color: var(--text) !important;
 }
 
 /* ========================= */

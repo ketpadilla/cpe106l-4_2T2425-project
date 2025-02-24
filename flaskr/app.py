@@ -11,6 +11,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 
 uri = os.getenv("MONGO_URI")
 database = os.getenv("DATABASE")
+food_api = os.getenv("FOOD_API")
 
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client[database]
@@ -21,8 +22,14 @@ def connect_to_db():
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
 
+    stats = db.command("dbStats")
     collections = db.list_collection_names()
+
     print("Collections in the database:", collections)
+    print(f"Database Storage Size: {stats['storageSize']} bytes")
+    print(f"Database Data Size: {stats['dataSize']} bytes")
+    print(f"Total Documents: {stats['objects']}")
+    print(f"Index Size: {stats['indexSize']} bytes")
 
   except Exception as e:
     print(f"Error: {e}")

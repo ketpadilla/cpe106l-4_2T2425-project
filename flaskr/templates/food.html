@@ -1,14 +1,42 @@
+{% from "icons.html" import search_icon, logo %}
 {% extends "layout.html" %}
 
 {% block title %}
   {% if title %}
-  {{title}}
+  {{ title }}
   {% endif %}
 {% endblock %}
 
 {% block content %}
 
-  <!-- TODO SEARCH FOOD -->
-  <p>Search Food</p>
+  <div class="container py-5">
+    <div class="row justify-content-center text-center mb-3">
+      <div class="col">
+        <h2 class="mb-1">Search for Food</h2>
+        <p class="text-muted">Find the calorie information for your favorite foods.</p>
+      </div>
+    </div>
 
+    <div class="row">
+      <form class="input-group d-flex justify-content-center" onsubmit="return false;">
+        <div class="input-group-prepend">
+          <div class="input-group-text">
+            {{ logo() }}
+          </div>
+        </div>
+
+        <input type="text" class="form-control" id="searchQuery" placeholder="Search food...">
+        <div class="input-group-append">
+          <span type="submit" class="input-group-text">{{ search_icon() }}</span>
+        </div>
+      </form>
+    </div>
+
+    <hr>
+
+    <div id="results">
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock %}

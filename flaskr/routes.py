@@ -1,7 +1,10 @@
-from flask import Flask, session, url_for, redirect, render_template, request, redirect
+from flask import Flask, session, url_for, redirect, render_template, request, redirect, jsonify
 from markupsafe import escape
 from .user.models import User
 from .utils import login_required 
+from .app import db, food_api
+import re 
+import requests
 
 def configure_routes(app, WEB_NAME):
   @app.route("/")
@@ -46,10 +49,57 @@ def configure_routes(app, WEB_NAME):
   def bmi_calculator():
     return render_template('bmi.html', title='BMI Calculator')
     
-  @app.route("/search-food/")
+  @app.route("/search-food/", methods=['GET'])
   def search_food():
-    return render_template('food.html', title='Search Food')
-    
+        return render_template('food.html', title='Search Food')
+
+  # @app.route("/api/search-food/", methods=['GET'])
+  # def api_search_food():
+  #   query = request.args.get('query', '').strip()
+
+  #   # If the search is empty, return an empty list immediately
+  #   if not query:
+  #     return jsonify([])
+
+  #   url = f"https://api.nal.usda.gov/fdc/v1/foods/search?api_key={food_api}&query={query}"
+
+  #   try:
+  #     response = requests.get(url)
+
+  #     if response.status_code == 200:
+  #       data = response.json()
+  #       result_list = data.get('foods', [])  # Extract 'foods' from API response
+
+  #       # Get rate limit details from headers
+  #       rate_limit = response.headers.get('X-RateLimit-Limit', 'Unknown')
+  #       rate_remaining = response.headers.get('X-RateLimit-Remaining', 'Unknown')
+
+  #       # Print rate limit details to console
+  #       print(f"Rate Limit: {rate_limit}, Remaining: {rate_remaining}")
+  #       return jsonify(result_list)
+  #     else:
+  #       print(f"Failed to retrieve data. Status code: {response.status_code}")
+  #       return jsonify([])  # Return empty list on failure
+  #   except requests.RequestException as e:
+  #     print(f"Request failed: {e}")
+  #     return jsonify([])  # Return empty list if request fails
+
+  @app.route("/api/search-food/", methods=['GET'])
+  def api_search_food():
+    query = request.args.get('query', '').strip()
+
+    if not query:  # If no search term, return an empty list
+      return jsonify([])
+
+    regex_query = re.compile(f'^{re.escape(query)}', re.IGNORECASE)
+    branded_results = db["branded-foods"].find({"Description": regex_query})
+    survey_results = db["survey-foods"].find({"Description": regex_query})
+
+    result_list = [{'id': str(result['_id']), 'name': result['Description']} for result in branded_results]
+    result_list.extend([{'id': str(result['_id']), 'name': result['Description']} for result in survey_results])
+
+    return jsonify(result_list)
+
   @app.route("/calories/")
   @login_required
   def calories():
