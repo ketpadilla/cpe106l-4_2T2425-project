@@ -122,3 +122,34 @@ hr {
     flex-wrap: wrap !important;
   }
 }
+
+#statusMessage {
+  white-space: pre-line;
+}
+
+#message {
+  font-family: 'Sofia Sans', sans-serif;
+  display: none;
+  background: color-mix(in srgb, var(--background) 80%, black 50%);
+  box-shadow: inset 0 0 20px 0 rgba(13, 18, 15, 0.50) !important;
+  position: relative;
+  margin-bottom: 1em;
+  margin-top: 0;
+  padding: 10px;
+  padding-left: 10px;
+  border-radius: 5px;
+}
+
+#message p {
+  font-weight: 100;
+  font-size: 1em;
+  margin: 5px;
+}
+
+.valid {
+  color: green;
+}
+
+.invalid {
+  color: red;
+}

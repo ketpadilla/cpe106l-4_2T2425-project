@@ -25,7 +25,17 @@
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password <span class="required">*</span></label>
-        <input type="password" name="password" class="field" required>
+        <input type="password" id="password" name="password" class="field" required 
+               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}" 
+               title="Password does not meet the requirements">
+
+        <div id="message">
+          <p id="letter" class="invalid">Atleast 1 lowercase letter</p>
+          <p id="capital" class="invalid">Atleast 1 uppercase letter</p>
+          <p id="number" class="invalid">Atleast 1 number</p>
+          <p id="special" class="invalid">Atleast 1 special character</p>
+          <p id="length" class="invalid">Atleast 8 characters</p>
+        </div>
 
         <label for="weight">Weight (kg) <span class="required">*</span></label>
         <input type="number" name="weight" class="field" step="0.1" required>
@@ -57,4 +67,6 @@
       </form>
     </div>
   </div>
+
+  <script src="{{ url_for('static', filename='js/valid.js') }}"></script>
 {% endblock %}
