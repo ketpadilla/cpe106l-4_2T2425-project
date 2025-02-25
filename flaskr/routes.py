@@ -53,52 +53,92 @@ def configure_routes(app, WEB_NAME):
   def search_food():
         return render_template('food.html', title='Search Food')
 
-  # @app.route("/api/search-food/", methods=['GET'])
-  # def api_search_food():
-  #   query = request.args.get('query', '').strip()
-
-  #   # If the search is empty, return an empty list immediately
-  #   if not query:
-  #     return jsonify([])
-
-  #   url = f"https://api.nal.usda.gov/fdc/v1/foods/search?api_key={food_api}&query={query}"
-
-  #   try:
-  #     response = requests.get(url)
-
-  #     if response.status_code == 200:
-  #       data = response.json()
-  #       result_list = data.get('foods', [])  # Extract 'foods' from API response
-
-  #       # Get rate limit details from headers
-  #       rate_limit = response.headers.get('X-RateLimit-Limit', 'Unknown')
-  #       rate_remaining = response.headers.get('X-RateLimit-Remaining', 'Unknown')
-
-  #       # Print rate limit details to console
-  #       print(f"Rate Limit: {rate_limit}, Remaining: {rate_remaining}")
-  #       return jsonify(result_list)
-  #     else:
-  #       print(f"Failed to retrieve data. Status code: {response.status_code}")
-  #       return jsonify([])  # Return empty list on failure
-  #   except requests.RequestException as e:
-  #     print(f"Request failed: {e}")
-  #     return jsonify([])  # Return empty list if request fails
-
   @app.route("/api/search-food/", methods=['GET'])
   def api_search_food():
-    query = request.args.get('query', '').strip()
+      query = request.args.get('query', '').strip()
 
-    if not query:  # If no search term, return an empty list
-      return jsonify([])
+      if not query:  
+        return jsonify([])
 
-    regex_query = re.compile(f'^{re.escape(query)}', re.IGNORECASE)
-    branded_results = db["branded-foods"].find({"Description": regex_query})
-    survey_results = db["survey-foods"].find({"Description": regex_query})
+      regex_query = re.compile(f'^{re.escape(query)}', re.IGNORECASE)
+      branded_results = db["branded-foods"].find({"Description": regex_query})
+      survey_results = db["survey-foods"].find({"Description": regex_query})
 
-    result_list = [{'id': str(result['_id']), 'name': result['Description']} for result in branded_results]
-    result_list.extend([{'id': str(result['_id']), 'name': result['Description']} for result in survey_results])
+      result_list = []
+      
+      for result in list(branded_results) + list(survey_results):
+        result_list.append({
+          'id': str(result['_id']),
+          'name': result['Description'].title(), 
+          'calories': result.get('Calories', 'N/A'),
+          'serving_size': result.get('Serving Size', 'N/A'),
+          'brand': result.get('Brand Owner', 'N/A').title() if 'Brand Owner' in result else None,
+          'fdcId': result.get('FDC ID', None) 
+        })
 
-    return jsonify(result_list)
+      return jsonify(result_list)
+
+  @app.route("/api/food-details/<fdc_id>", methods=['GET'])
+  def food_details(fdc_id):
+    url = f"https://api.nal.usda.gov/fdc/v1/food/{fdc_id}?api_key={food_api}"
+
+    try:
+      response = requests.get(url)
+      if response.status_code == 200:
+        data = response.json()
+        food_type = data.get('dataType', 'N/A')
+
+        nutrients = {}
+        for nutrient in data.get('foodNutrients', []):
+          nutrient_name = nutrient.get('nutrient', {}).get('name')
+          nutrient_value = nutrient.get('amount') 
+          if nutrient_name and nutrient_value is not None:
+            nutrients[nutrient_name] = nutrient_value
+
+        if food_type == "Survey (FNDDS)":
+          serving_size = next(
+            (f"{portion['portionDescription']} ({portion['gramWeight']} g)"
+            for portion in data.get("foodPortions", [])
+            if portion.get("portionDescription")), 
+            "N/A"
+          )
+        else: 
+          serving_size = f"{data.get('servingSize', 'N/A')} {data.get('servingSizeUnit', 'N/A')}"
+
+
+        attributes = {}
+        if 'foodAttributes' in data:
+          for attr in data['foodAttributes']:
+            attributes[attr.get('name', 'Unknown')] = attr.get('value', 'N/A')
+
+        return jsonify({
+          'name': data.get('description', 'N/A'),
+          'food_class': data.get('foodClass', 'N/A'),
+          'fdc_id': data.get('fdcId', 'N/A'),
+          'food_code': data.get('foodCode', 'N/A'),
+          'category': data.get('wweiaFoodCategory', {}).get('wweiaFoodCategoryDescription', 'N/A'),
+          'calories': nutrients.get('Energy', 'N/A'),
+          'protein': nutrients.get('Protein', 'N/A'),
+          'carbs': nutrients.get('Carbohydrate, by difference', 'N/A'),
+          'fats': nutrients.get('Total lipid (fat)', 'N/A'),
+          'serving_size': serving_size,
+          'attributes': attributes,
+          'publication_date': data.get('publicationDate', 'N/A')
+        })
+      else:
+        return jsonify({'error': 'Food details not found'}), 404
+    except requests.RequestException as e:
+      return jsonify({'error': f'Request failed: {e}'}), 500
+
+  @app.route("/api/add-favorite", methods=['POST'])
+  def add_favorite():
+    #TODO
+    pass
+
+  @app.route("/api/add-daily-intake", methods=['POST'])
+  def add_daily_intake():
+    #TODO
+    pass
 
   @app.route("/calories/")
   @login_required

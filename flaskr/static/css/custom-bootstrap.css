@@ -115,3 +115,7 @@ input[type=submit] {
   border: None !important;
   color: var(--text) !important;
 }
+
+.modal-content {
+  background-color: var(--background) !important;
+}
