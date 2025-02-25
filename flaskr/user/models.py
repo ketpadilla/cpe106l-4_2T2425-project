@@ -89,15 +89,23 @@ class User:
       print("No changes detected. Skipping update.")
       return jsonify({"message": "No changes detected."}), 200
 
-    result = db.users.update_one({"email": user['email']}, {"$set": updated_data})
+    # update the bmi in mongodb
+    if (updated_data["weight"] != current_data.get("weight") or
+        updated_data["height"] != current_data.get("height")):
+        weight = updated_data["weight"]
+        height = updated_data["height"]
+        bmi = weight / ((height / 100) ** 2) if weight > 0 and height > 0 else None
+        updated_data["bmi"] = bmi
+
+    result = db.users.update_one({"email": user["email"]}, {"$set": updated_data})
     print(f"Modified Count: {result.modified_count}")
 
     session["user"].update(updated_data)
     session.modified = True
 
-    if updated_data["weight"] != current_data.get("weight") or updated_data["height"] != current_data.get("height"):
-      return self.calculate_bmi()
-
     print("Profile updated successfully!", "success")
-    return jsonify({"message": "Profile updated successfully"}), 200
+    return jsonify({
+        "message": "Profile updated successfully",
+        "bmi": session["user"].get("bmi", None)
+    }), 200
 

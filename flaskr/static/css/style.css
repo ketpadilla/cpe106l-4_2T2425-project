@@ -110,3 +110,7 @@ a:hover {
     flex-wrap: wrap !important;
   }
 }
+
+#statusMessage {
+  white-space: pre-line;
+}

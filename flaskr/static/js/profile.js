@@ -13,6 +13,8 @@ function enableEditing() {
   document.getElementById("editButton").classList.add("d-none");
   document.getElementById("saveButton").classList.remove("d-none");
   document.getElementById("cancelButton").classList.remove("d-none");
+
+  
 }
 
 function disableEditing() {
