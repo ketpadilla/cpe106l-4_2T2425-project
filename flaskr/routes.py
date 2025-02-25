@@ -1,5 +1,6 @@
 from flask import Flask, session, url_for, redirect, render_template, request, redirect
 from markupsafe import escape
+from passlib.hash import pbkdf2_sha256
 from .user.models import User
 from .utils import login_required 
 
@@ -25,6 +26,28 @@ def configure_routes(app, WEB_NAME):
         return render_template('sign-up.html', title="Sign Up", error=result[0]['error'])
       return redirect(url_for('index'))
     return render_template('sign-up.html', title="Sign Up")
+  
+  @app.route("/forgot-password/", methods = ['GET', 'POST'])
+  def forgot_password():
+    if request.method == 'POST':
+      email = request.form['email']
+      new_password = request.form['new_password']
+      confirm_password = request.form['confirm_password']
+
+      if new_password != confirm_password:
+        return render_template('forgot-password.html', title='Forgot Password', error='Passwords do not match')
+      
+      user = User().find_by_email(email)
+      if not user:
+        return render_template('forgot-password.html', title='Forgot Password', error='Email not found')
+      
+      if pbkdf2_sha256.verify(new_password, user['password']):
+        return render_template('forgot-password.html', title='Forgot Password', error='Password matches your previous')
+      
+      User().update_password(email, new_password)
+      return render_template('forgot-password.html', title='Forgot Password', message='Password has been reset successfully')
+    
+    return render_template('forgot-password.html', title='Forgot Password')
 
   @app.route("/sign-out/")
   def logout():
@@ -59,7 +82,7 @@ def configure_routes(app, WEB_NAME):
   @login_required
   def history():
     return render_template('history.html', title='View History')
-
+  
   @app.errorhandler(404)
   def page_not_found(error):
     return render_template('page-not-found.html', title = '404'), 404
