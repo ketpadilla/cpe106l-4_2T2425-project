@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session, redirect, url_for
+from flask import Flask, jsonify, request, session
 from passlib.hash import pbkdf2_sha256
 from bson import ObjectId
 from ..app import db

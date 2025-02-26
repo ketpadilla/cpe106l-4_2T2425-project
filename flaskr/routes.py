@@ -1,11 +1,7 @@
-from flask import Flask, session, url_for, redirect, render_template, request, redirect, jsonify
-from markupsafe import escape
-from passlib.hash import pbkdf2_sha256
+from flask import Flask, session, url_for, redirect, render_template, request
 from .user.models import User, LocalAPI
 from .utils import login_required 
 from .app import db, food_api
-import re 
-import requests
 
 local_api = LocalAPI(db, food_api)
 
