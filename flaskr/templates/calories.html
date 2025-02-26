@@ -4,11 +4,96 @@
   {% if title %}
   {{title}}
   {% endif %}
-{% endblock %}
-
-{% block content %}
+  {% endblock %}
+  
+  {% block content %}
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
   <!-- TODO: DAILY CALORIE INTAKE -->
-  <p>Daily Calorie Intake</p>
+  <div class="container py-5">
+    <div class="row justify-content-center text-center g-2">
+      <div class="col">
+        <h2 class="mb-1">Track Your Calories</h2>
+        <p class="text-muted">Easily find calorie details for your meals and snacks.</p>
+      </div>
+    </div>
+  
+    <div class="row justify-content-center text-center g-2 px-0">
+      <div class="col-12 d-flex justify-content-center">
+        <div class="card shadow-lg px-4 py-4 mx-auto" style="max-width: 80%;"> 
+          <div class="d-flex justify-content-center align-items-center flex-wrap">
+            <div class="col-md-6 text-center">
+              <canvas id="consumedChart" style="width:100%; height:auto;"></canvas>
+              <h5 class="pt-3">Consumed</h5>
+            </div>
+            <div class="col-md-6 text-center">
+              <canvas id="remainingChart" style="width:100%; height:auto;"></canvas>
+              <h5 class="pt-3">Remaining</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-12 d-flex justify-content-center">
+          <div class="card shadow-lg p-4">
+              <h3 class="text-center">Today's Food Entries</h3>
+
+              <div id="food-list-today">
+                <!-- TODO: Similar to search results -->
+                 <!-- Add 
+                  - Amount Field (default to 1)
+                  - Remove button
+                  - Data (fetched from mongodb branded-foods and survey-foods):
+                    • Serving Size 
+                    • Description
+                    • Brand (If applicable)
+                  -->
+              </div>
+          </div>
+      </div>
+    </div>
+
+
+  </div>
+  
+  <script>
+    // SAMPLE CHART DATA
+    var consumedCalories = 1500;
+    var remainingCalories = 500;
+    var totalCalories = consumedCalories + remainingCalories; // Total calorie goal
+  
+    var ctx1 = document.getElementById("consumedChart").getContext("2d");
+    var ctx2 = document.getElementById("remainingChart").getContext("2d");
+  
+    new Chart(ctx1, {
+      type: "doughnut",
+      data: {
+        datasets: [{
+          data: [consumedCalories, totalCalories],
+          backgroundColor: ["#007bff", "rgba(0, 123, 255, 0.3)"]
+        }]
+      },
+      options: {
+        responsive: true,
+      }
+    });
+  
+    new Chart(ctx2, {
+      type: "doughnut",
+      data: {
+        datasets: [{
+          data: [remainingCalories, totalCalories],
+          backgroundColor: ["gray", "rgba(128, 128, 128, 0.3)"]
+        }]
+      },
+      options: {
+        responsive: true,
+      }
+    });
+  </script>
+  
 
 {% endblock %}

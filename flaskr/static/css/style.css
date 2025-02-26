@@ -117,12 +117,6 @@ hr {
   }
 }
 
-@media (max-width: 2400px) {
-  .force-wrap {
-    flex-wrap: wrap !important;
-  }
-}
-
 #statusMessage {
   white-space: pre-line;
 }
