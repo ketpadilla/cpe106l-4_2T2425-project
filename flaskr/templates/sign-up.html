@@ -8,6 +8,52 @@
 {% endblock %}
 
 {% block content %}
+  <style>
+    #message {
+      font-family: 'Sofia Sans', sans-serif;
+      display: none;
+      background: rgba(1, 1, 1, 0.5);
+      color: var(--text);
+      position: relative;
+      padding: 8px;
+      margin-top: 3px;
+      font-size: 10px;
+      border: 1px solid rgba(1, 1, 1, 0.5);
+      border-radius: 5px;
+    }
+
+    #message p {
+      font-family: 'Sofia Sans', sans-serif;
+      padding: 2px 5px;
+      font-size: 11px;
+      margin: 0;
+    }
+
+    .valid {
+      color: green;
+    }
+
+    .invalid {
+      color: red;
+    }
+
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #togglePassword {
+      background: none;
+      border: none;
+      position: absolute;
+      right: 10px;
+      bottom: 35px;
+      cursor: pointer;
+      color: #e6e3dd;
+    }
+  </style>
+
   <div class="card-wrapper">
     <div class="card">
       <h3> Create an Account</h3>
@@ -26,21 +72,21 @@
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password <span class="required">*</span></label>
-        <div class="password-wrapper" style="position: relative; display: flex; align-items: center;">
+        <div class="password-wrapper">
           <input type="password" id="password" name="password" class="field" required
                  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}"
                  title="Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a number, and a special character.">
-          <button type="button" id="togglePassword" style="background: none; border: none; position: absolute; right: 10px; bottom: 35px; cursor: pointer; color: #e6e3dd;">
+          <button type="button" id="togglePassword">
             {{ eyeslash_icon() }}
           </button>
         </div>
         
         <div id="message">
-          <p id="letter" class="invalid">Atleast 1 lowercase letter</p>
-          <p id="capital" class="invalid">Atleast 1 uppercase letter</p>
-          <p id="number" class="invalid">Atleast 1 number</p>
-          <p id="special" class="invalid">Atleast 1 special character</p>
-          <p id="length" class="invalid">Atleast 8 characters</p>
+          <p id="letter" class="invalid">At least 1 lowercase letter</p>
+          <p id="capital" class="invalid">At least 1 uppercase letter</p>
+          <p id="number" class="invalid">At least 1 number</p>
+          <p id="special" class="invalid">At least 1 special character</p>
+          <p id="length" class="invalid">At least 8 characters</p>
         </div>
 
         <label for="weight">Weight (kg) <span class="required">*</span></label>
@@ -73,21 +119,85 @@
       </form>
     </div>
   </div>
+  
+  <script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      let passwordField = document.getElementById('password');
+      let toggleButton = document.getElementById('togglePassword');
+  
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleButton.innerHTML = `{{ eyefill_icon() }}`;
+      } else {
+        passwordField.type = 'password';
+        toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
+      }
+    });
+  </script>
+
+  <script>
+    var passwordInput = document.getElementById("password");
+    var letter = document.getElementById("letter");
+    var capital = document.getElementById("capital");
+    var number = document.getElementById("number");
+    var special = document.getElementById("special");
+    var length = document.getElementById("length");
+
+    passwordInput.onfocus = function() {
+      document.getElementById("message").style.display = "block";
+    }
+
+    passwordInput.onblur = function() {
+      document.getElementById("message").style.display = "none";
+    }
+
+    passwordInput.onkeyup = function() {
+      var lowerCaseLetters = /[a-z]/g;
+      if(passwordInput.value.match(lowerCaseLetters)) {  
+        letter.classList.remove("invalid");
+        letter.classList.add("valid");
+      } else {
+        letter.classList.remove("valid");
+        letter.classList.add("invalid");
+      }
+
+      var upperCaseLetters = /[A-Z]/g;
+      if(passwordInput.value.match(upperCaseLetters)) {  
+        capital.classList.remove("invalid");
+        capital.classList.add("valid");
+      } else {
+        capital.classList.remove("valid");
+        capital.classList.add("invalid");
+      }
+
+      var numbers = /[0-9]/g;
+      if(passwordInput.value.match(numbers)) {  
+        number.classList.remove("invalid");
+        number.classList.add("valid");
+      } else {
+        number.classList.remove("valid");
+        number.classList.add("invalid");
+      }
+
+      var specialCharacters = /[@$!%*?&]/g;
+      if(passwordInput.value.match(specialCharacters)) {  
+        special.classList.remove("invalid");
+        special.classList.add("valid");
+      } else {
+        special.classList.remove("valid");
+        special.classList.add("invalid");
+      }
+
+      if(passwordInput.value.length >= 8) {
+        length.classList.remove("invalid");
+        length.classList.add("valid");
+      } else {
+        length.classList.remove("valid");
+        length.classList.add("invalid");
+      }
+    }
+  </script>
 
   <script src="{{ url_for('static', filename='js/valid.js') }}"></script>
 
-  <script>
-  document.getElementById('togglePassword').addEventListener('click', function () {
-    let passwordField = document.getElementById('password');
-    let toggleButton = document.getElementById('togglePassword');
-
-    if (passwordField.type === 'password') {
-      passwordField.type = 'text';
-      toggleButton.innerHTML = `{{ eyefill_icon() }}`;
-    } else {
-      passwordField.type = 'password';
-      toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
-    }
-  });
-  </script>
 {% endblock %}
