@@ -1,3 +1,4 @@
+{% from "icons.html" import eyefill_icon, eyeslash_icon %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -25,10 +26,15 @@
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password <span class="required">*</span></label>
-        <input type="password" id="password" name="password" class="field" required 
-               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}" 
-               title="Password does not meet the requirements">
-
+        <div class="password-wrapper" style="position: relative; display: flex; align-items: center;">
+          <input type="password" id="password" name="password" class="field" required
+                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}"
+                 title="Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a number, and a special character.">
+          <button type="button" id="togglePassword" style="background: none; border: none; position: absolute; right: 10px; bottom: 35px; cursor: pointer; color: #e6e3dd;">
+            {{ eyeslash_icon() }}
+          </button>
+        </div>
+        
         <div id="message">
           <p id="letter" class="invalid">Atleast 1 lowercase letter</p>
           <p id="capital" class="invalid">Atleast 1 uppercase letter</p>
@@ -69,4 +75,19 @@
   </div>
 
   <script src="{{ url_for('static', filename='js/valid.js') }}"></script>
+
+  <script>
+  document.getElementById('togglePassword').addEventListener('click', function () {
+    let passwordField = document.getElementById('password');
+    let toggleButton = document.getElementById('togglePassword');
+
+    if (passwordField.type === 'password') {
+      passwordField.type = 'text';
+      toggleButton.innerHTML = `{{ eyefill_icon() }}`;
+    } else {
+      passwordField.type = 'password';
+      toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
+    }
+  });
+  </script>
 {% endblock %}

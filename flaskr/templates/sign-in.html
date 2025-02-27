@@ -1,4 +1,4 @@
-{% from "icons.html" import eyefill_icon %}
+{% from "icons.html" import eyefill_icon, eyeslash_icon %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -24,7 +24,7 @@
         <div class="password-wrapper" style="position: relative; display: flex; align-items: center;">
           <input type="password" name="password" id="password" class="field" required style="flex: 1;">
           <button type="button" id="togglePassword" style="background: none; border: none; position: absolute; bottom: 35px; right: 10px; cursor: pointer; color: #e6e3dd;">
-            {{ eyefill_icon() }}
+            {{ eyeslash_icon() }}
           </button>
         </div>
 
@@ -41,16 +41,20 @@
     Forgot password?&nbsp;
     <a class="ms-1" href="/forgot-password">Reset now</a>
   </div>
+
+  <script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      let passwordField = document.getElementById('password');
+      let toggleButton = document.getElementById('togglePassword');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleButton.innerHTML = `{{ eyefill_icon() }}`;
+      } else {
+        passwordField.type = 'password';
+        toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
+      }
+    });
+  </script>
 {% endblock %}
 
-
-<script>
-  document.getElementById('togglePassword').addEventListener('click', function () {
-    let passwordField = document.getElementById('password');
-    if (passwordField.type === 'password') {
-      passwordField.type = 'text';
-    } else {
-      passwordField.type = 'password';
-    }
-  });
-</script>
