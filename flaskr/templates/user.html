@@ -59,11 +59,16 @@
               <label class="form-label mt-2"><strong>Activity Level:</strong></label>
               <span id="activityLevelText">{{ session['user']['activity_level'].title() }}</span> 
               <select id="activityLevelSelect" class="form-control d-none" name="activity_level">
-                <option value="sedentary" {{ "selected" if session['user']['activity_level'].lower() == "sedentary" else "" }}>Sedentary</option>
-                <option value="light_activity" {{ "selected" if session['user']['activity_level'].lower() == "lightly active" else "" }}>Lightly Active</option>
-                <option value="moderate_activity" {{ "selected" if session['user']['activity_level'].lower() == "moderately active" else "" }}>Moderately Active</option>
-                <option value="very_active" {{ "selected" if session['user']['activity_level'].lower() == "very active" else "" }}>Very Active</option>
-                <option value="extremely_active" {{ "selected" if session['user']['activity_level'].lower() == "extremely active" else "" }}>Extremely Active</option>
+                {% set activity_levels = {
+                  'sedentary': 'Sedentary',
+                  'light_activity': 'Lightly Active',
+                  'moderate_activity': 'Moderately Active',
+                  'very_active': 'Very Active',
+                  'extremely_active': 'Extremely Active'
+                } %}
+                {% for value, label in activity_levels.items() %}
+                  <option value="{{ value }}" {{ "selected" if session['user']['activity_level'].lower() == value else "" }}>{{ label }}</option>
+                {% endfor %}
               </select>
             </div>
           </div>
@@ -88,23 +93,24 @@
     <div class="col-md-8">
       <div class="card shadow-lg custom-card-width">
         <div class="card-body">
-          <h5 class="card-title">New Card Title</h5>
+          <h5 class="card-title">Daily Calorie Intake Calculator</h5>
           <hr>
-          <p>hello kimchan</p>
-          
+          <p id="ageDisplay" class="text-left"></p> <!-- New element for displaying age -->
+          <label class="form-label"><strong>Goal Weight (kg):</strong></label>
+          <input type="number" id="goalWeightInput" class="form-control" placeholder="Enter your goal weight">
+          <p class="text-muted small mt-2">Note: The deficit or surplus is set to 500 calories to maintain healthy weight loss or gain.</p> <!-- New note -->
+          <button type="button" id="calculateCalorieButton" class="btn btn-info w-100 mt-3" onclick="calculateCalorieIntake()">Calculate Recommended Daily Calorie Intake</button>
+          <div class="mt-3">
+            <p id="calorieResult" class="text-center"></p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row justify-content-center mt-4">
-        <div class="col-md-8 text-center">
-          <button type="button" id="calculateCalorieButton" class="btn btn-info w-50" onclick="calculateCalorieIntake()">Calculated Recommended Daily Calorie Intake</button>
-        </div>
-      </div>
-    <p id="statusMessage" class="text-center mt-3"></p>
-  </div>
 
+  <script src="{{ url_for('static', filename='js/age.js') }}"></script>
   <script src="{{ url_for('static', filename='js/calculate-calorie.js') }}"></script>
   <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+  
 {% endblock %}

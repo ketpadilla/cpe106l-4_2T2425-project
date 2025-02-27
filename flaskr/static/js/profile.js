@@ -10,10 +10,6 @@ function enableEditing() {
   document.getElementById("activityLevelText").classList.add("d-none");
   document.getElementById("activityLevelSelect").classList.remove("d-none");
 
-  const activityLevelText = document.getElementById("activityLevelText").textContent.trim().toLowerCase();
-  const activityLevelSelect = document.getElementById("activityLevelSelect");
-  activityLevelSelect.value = activityLevelText;
-
   document.getElementById("editButton").classList.add("d-none");
   document.getElementById("saveButton").classList.remove("d-none");
   document.getElementById("cancelButton").classList.remove("d-none");

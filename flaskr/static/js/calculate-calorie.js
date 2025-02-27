@@ -1,7 +1,6 @@
 function calculateCalorieIntake() {
-    // Get age from the date of birth element.
     const dobElem = document.getElementById('dobText');
-    let age = 30; // default age if parsing fails
+    let age = 30; 
     if (dobElem) {
         const dobStr = dobElem.innerText;
         const dobDate = new Date(dobStr);
@@ -12,40 +11,37 @@ function calculateCalorieIntake() {
         }
     }
 
-    // Get sex from the corresponding element (expects "Male" or "Female").
+    document.getElementById('ageDisplay').innerText = `Age: ${age}`;
+
     const sexElem = document.getElementById('sexText');
     let sex = 'male'; // default to male if not found
     if (sexElem) {
         sex = sexElem.innerText.toLowerCase();
     }
 
-    // Get weight (kg) from input or text.
     const weightInput = document.getElementById('weightInput');
     const weightText = document.getElementById('weightText');
     let weight = weightInput && weightInput.value ? parseFloat(weightInput.value) : parseFloat(weightText.innerText);
 
-    // Get height (cm) from input or text.
     const heightInput = document.getElementById('heightInput');
     const heightText = document.getElementById('heightText');
     let height = heightInput && heightInput.value ? parseFloat(heightInput.value) : parseFloat(heightText.innerText);
 
-    // Calculate BMI.
     let bmi = weight / Math.pow(height / 100, 2);
 
-    // Get activity factor from the activity level text.
-    const activityElem = document.getElementById('activityLevelText');
-    let activityFactor = 1.2; // default activity factor
-    if (activityElem) {
-        const activityStr = activityElem.innerText.toLowerCase();
-        if (activityStr.includes("sedentary")) {
+    const activitySelect = document.getElementById('activityLevelSelect');
+    let activityFactor = 1.2; // default to sedentary
+    if (activitySelect) {
+        const activityValue = activitySelect.value;
+        if (activityValue === "sedentary") {
             activityFactor = 1.2;
-        } else if (activityStr.includes("lightly")) {
+        } else if (activityValue === "light_activity") {
             activityFactor = 1.375;
-        } else if (activityStr.includes("moderately")) {
+        } else if (activityValue === "moderate_activity") {
             activityFactor = 1.55;
-        } else if (activityStr.includes("very active")) {
+        } else if (activityValue === "very_active") {
             activityFactor = 1.725;
-        } else if (activityStr.includes("extremely active")) {
+        } else if (activityValue === "extremely_active") {
             activityFactor = 1.9;
         }
     }
@@ -59,29 +55,35 @@ function calculateCalorieIntake() {
         bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
     }
 
-    // Calculate maintenance calories.
+
     let maintenance = bmr * activityFactor;
-    let recommended;
-    let category = "";
-    
-    // Adjust based on BMI.
-    if (bmi > 25) {
-        // Overweight: subtract a deficit of 500 calories.
-        recommended = maintenance - 500;
-        category = "Overweight (deficit of 500 calories applied)";
-    } else if (bmi < 18.5) {
-        // Underweight: add a surplus of 500 calories.
-        recommended = maintenance + 500;
-        category = "Underweight (surplus of 500 calories applied)";
-    } else {
-        // Normal weight: maintenance.
-        recommended = maintenance;
-        category = "Normal weight (maintenance calories)";
+    const goalWeightInput = document.getElementById('goalWeightInput');
+    const goalWeight = parseFloat(goalWeightInput.value);
+    const calorieDeficitPerDay = 500; // 0.5 kg per week
+    const calorieSurplusPerDay = 500; // 0.5 kg per week
+    const caloriesPerKg = 7700; // Approximate calories in 1 kg of body weight
+
+    if (isNaN(goalWeight)) {
+        document.getElementById('calorieResult').innerText = 'Please enter a valid goal weight.';
+        return;
     }
 
-    // Display the result.
-    const statusMessage = document.getElementById('statusMessage');
-    statusMessage.innerText =
-        "Category: " + category + "\n" +
-        "Recommended Daily Calorie Intake: " + recommended.toFixed(2) + " calories.";
+    let weightDifference = goalWeight - weight;
+    let totalCaloriesToChange = Math.abs(weightDifference) * caloriesPerKg;
+    let daysToReachGoal = Math.ceil(totalCaloriesToChange / calorieDeficitPerDay);
+    let dailyCalorieIntake;
+
+    if (goalWeight < weight) {
+        // Weight loss scenario
+        dailyCalorieIntake = maintenance - calorieDeficitPerDay;
+        document.getElementById('calorieResult').innerHTML = `Daily Intake To Reach Goal by ${daysToReachGoal} days: ${dailyCalorieIntake.toFixed(2)} calories<br>Weight Loss Scenario`;
+    } else if (goalWeight > weight) {
+        // Weight gain scenario
+        dailyCalorieIntake = maintenance + calorieSurplusPerDay;
+        document.getElementById('calorieResult').innerHTML = `Daily Intake To Reach Goal by ${daysToReachGoal} days: ${dailyCalorieIntake.toFixed(2)} calories<br>Weight Gain Scenario`;
+    } else {
+        // Maintenance scenario
+        dailyCalorieIntake = maintenance;
+        document.getElementById('calorieResult').innerHTML = `Maintenance Daily Calorie Intake: ${dailyCalorieIntake.toFixed(2)} calories<br>Maintenance Scenario`;
+    }
 }
