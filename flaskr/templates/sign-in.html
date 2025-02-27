@@ -8,6 +8,25 @@
 {% endblock %}
 
 {% block content %}
+
+  <style>
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #togglePassword {
+      background: none;
+      border: none;
+      position: absolute;
+      right: 10px;
+      bottom: 35px;
+      cursor: pointer;
+      color: #e6e3dd;
+    }
+  </style>
+
   <div class="card-wrapper">
     <div class="card">
       {% if error %}
@@ -21,9 +40,9 @@
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password</label>
-        <div class="password-wrapper" style="position: relative; display: flex; align-items: center;">
+        <div class="password-wrapper">
           <input type="password" name="password" id="password" class="field" required style="flex: 1;">
-          <button type="button" id="togglePassword" style="background: none; border: none; position: absolute; bottom: 35px; right: 10px; cursor: pointer; color: #e6e3dd;">
+          <button type="button" id="togglePassword">
             {{ eyeslash_icon() }}
           </button>
         </div>
@@ -56,5 +75,6 @@
       }
     });
   </script>
+  
 {% endblock %}
 
