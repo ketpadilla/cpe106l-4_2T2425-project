@@ -1,4 +1,4 @@
-from flask import Flask, session, url_for, redirect, render_template, request, redirect
+from flask import Flask, session, url_for, redirect, render_template, request, redirect, jsonify
 from markupsafe import escape
 from passlib.hash import pbkdf2_sha256
 from .user.models import User
@@ -9,15 +9,20 @@ def configure_routes(app, WEB_NAME):
   def index(page_title = WEB_NAME):
       return render_template('index.html', title=page_title)
   
-  @app.route("/update-calories/", methods=['POST'])
+  @app.route("/update-calorie-intake/", methods=['POST'])
   @login_required
   def update_calories():
-      calorie_intake = request.form.get('recommended_calorie_intake')
-      if calorie_intake:
-          User().update_calorie_intake(session['user']['id'], calorie_intake)
-          return redirect(url_for('calories'))
-      return redirect(url_for('calories', error="Invalid input"))
+      data = request.get_json()
+      recommended_calorie_intake = data.get('recommended_calorie_intake')
 
+      if not recommended_calorie_intake:
+          return jsonify({"error": "Recommended calorie intake is required"}), 400
+
+      result = User().update_calorie_intake(session['user']['email'], recommended_calorie_intake)
+      
+      if result:
+          return jsonify({"message": "Calorie intake updated successfully", "recommended_calorie_intake": recommended_calorie_intake}), 200
+      return jsonify({"error": "Failed to update calorie intake"}), 500
 
   @app.route("/sign-in/", methods=['GET', 'POST'])
   def login():

@@ -59,35 +59,27 @@ class User:
         return result.modified_count > 0
 
     @login_required
-    def update_calorie_intake(self):
-        user = session.get("user", {})
-
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        user_id = user.get("_id")
-
+    def update_calorie_intake(self, email, recommended_calorie_intake):
         try:
-            data = request.get_json()
-            recommended_calorie_intake = float(data.get("recommended_calorie_intake", 0) or 0)
+            recommended_calorie_intake = float(recommended_calorie_intake)
 
             result = db.users.update_one(
-                {"_id": ObjectId(user_id)},
+                {"email": email}, 
                 {"$set": {"recommended_calorie_intake": recommended_calorie_intake}}
             )
 
             if result.modified_count > 0:
-                session["user"]["recommended_calorie_intake"] = recommended_calorie_intake
+                # Ensure session updates correctly
+                user = session.get("user", {})
+                user["recommended_calorie_intake"] = recommended_calorie_intake
+                session["user"] = user  # Reassign session dictionary
                 session.modified = True
-                return jsonify({
-                    "message": "Calorie intake updated successfully",
-                    "recommended_calorie_intake": recommended_calorie_intake
-                }), 200
-            else:
-                return jsonify({"error": "Failed to update calorie intake"}), 400
+                return True
+            return False
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
-        
+            print(f"Error updating calorie intake: {e}")
+            return False
+
     @login_required
     def calculate_bmi(self):
         user = session.get('user', {})
