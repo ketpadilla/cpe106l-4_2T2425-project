@@ -70,11 +70,14 @@
                   <option value="{{ value }}" {{ "selected" if session['user']['activity_level'].lower() == value else "" }}>{{ label }}</option>
                 {% endfor %}
               </select>
+
+              <label class="form-label mt-2"><strong>Recommended Daily Calorie Intake:</strong></label>
+              <span id="recommendedCalorieIntakeText">{{ session['user']['recommended_calorie_intake'] }}</span>
+
             </div>
           </div>
         </div>
       </div>
-      
       
       
 

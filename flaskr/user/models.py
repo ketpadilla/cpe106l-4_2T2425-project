@@ -59,6 +59,36 @@ class User:
         return result.modified_count > 0
 
     @login_required
+    def update_calorie_intake(self):
+        user = session.get("user", {})
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user_id = user.get("_id")
+
+        try:
+            data = request.get_json()
+            recommended_calorie_intake = float(data.get("recommended_calorie_intake", 0) or 0)
+
+            result = db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"recommended_calorie_intake": recommended_calorie_intake}}
+            )
+
+            if result.modified_count > 0:
+                session["user"]["recommended_calorie_intake"] = recommended_calorie_intake
+                session.modified = True
+                return jsonify({
+                    "message": "Calorie intake updated successfully",
+                    "recommended_calorie_intake": recommended_calorie_intake
+                }), 200
+            else:
+                return jsonify({"error": "Failed to update calorie intake"}), 400
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        
+    @login_required
     def calculate_bmi(self):
         user = session.get('user', {})
         weight = float(user.get('weight', 0))
@@ -90,6 +120,7 @@ class User:
             "weight": float(request.form.get("weight", 0) or 0),
             "height": float(request.form.get("height", 0) or 0),
             "activity_level": request.form.get("activity_level", ""),
+            "recommended_calorie_intake": float(request.form.get("daily_calorie_intake", 0) or 0)
         }
 
         current_data = db.users.find_one({"email": user['email']})
@@ -114,5 +145,6 @@ class User:
         print("Profile updated successfully!", "success")
         return jsonify({
             "message": "Profile updated successfully",
-            "bmi": session["user"].get("bmi", None)
+            "bmi": session["user"].get("bmi", None),
+            "recommended_calorie_intake": session["user"].get("daily_calorie_intake", None)
         }), 200

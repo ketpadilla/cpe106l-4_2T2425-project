@@ -15,6 +15,7 @@ database = os.getenv("DATABASE")
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client[database]
 
+
 @app.before_request
 def connect_to_db():
   try:

@@ -86,4 +86,23 @@ function calculateCalorieIntake() {
         dailyCalorieIntake = maintenance;
         document.getElementById('calorieResult').innerHTML = `Maintenance Daily Calorie Intake: ${dailyCalorieIntake.toFixed(2)} calories<br>Maintenance Scenario`;
     }
+
+    document.getElementById('recommendedCalorieIntakeText').innerText = dailyCalorieIntake.toFixed(2);
+
+    fetch('/update-calorie-intake/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recommended_calorie_intake: dailyCalorieIntake.toFixed(2) }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            console.log("Calorie intake updated:", data.recommended_calorie_intake);
+        } else {
+            console.error("Failed to update calorie intake:", data.error);
+        }
+    })
+    .catch(error => console.error("Error:", error));
 }

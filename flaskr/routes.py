@@ -8,6 +8,16 @@ def configure_routes(app, WEB_NAME):
   @app.route("/")
   def index(page_title = WEB_NAME):
       return render_template('index.html', title=page_title)
+  
+  @app.route("/update-calories/", methods=['POST'])
+  @login_required
+  def update_calories():
+      calorie_intake = request.form.get('recommended_calorie_intake')
+      if calorie_intake:
+          User().update_calorie_intake(session['user']['id'], calorie_intake)
+          return redirect(url_for('calories'))
+      return redirect(url_for('calories', error="Invalid input"))
+
 
   @app.route("/sign-in/", methods=['GET', 'POST'])
   def login():
@@ -49,6 +59,7 @@ def configure_routes(app, WEB_NAME):
     
     return render_template('forgot-password.html', title='Forgot Password')
 
+  
   @app.route("/sign-out/")
   def logout():
     User().sign_out()
