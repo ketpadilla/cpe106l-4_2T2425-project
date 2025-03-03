@@ -1,13 +1,33 @@
+{% from "icons.html" import eyefill_icon, eyeslash_icon %}
 {% extends "layout.html" %}
 
 {% block title %}
   {% if title %}
-  {{title}}
+    {{ title }}
   {% endif %}
 {% endblock %}
 
 {% block content %}
-  <div class = "card-wrapper">
+
+  <style>
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #togglePassword {
+      background: none;
+      border: none;
+      position: absolute;
+      right: 10px;
+      bottom: 35px;
+      cursor: pointer;
+      color: #e6e3dd;
+    }
+  </style>
+
+  <div class="card-wrapper">
     <div class="card">
       {% if error %}
         <div class="error-message">
@@ -20,7 +40,12 @@
         <input type="email" name="email" class="field" required>
 
         <label for="password">Password</label>
-        <input type="password" name="password" class="field" required>
+        <div class="password-wrapper">
+          <input type="password" name="password" id="password" class="field" required style="flex: 1;">
+          <button type="button" id="togglePassword">
+            {{ eyeslash_icon() }}
+          </button>
+        </div>
 
         <input type="submit" value="SIGN IN" class="btn btn-primary">
       </form>
@@ -31,9 +56,25 @@
     Not registered?&nbsp;
     <a class="ms-1" href="/sign-up">Sign up now</a>
   </div>
-  <div class = "text-center d flex align - items center justify-content center">
+  <div class="text-center d-flex align-items-center justify-content-center">
     Forgot password?&nbsp;
-    <a class = "ms-1 text muted" href="/forgot-password">Reset now</a>
+    <a class="ms-1" href="/forgot-password">Reset now</a>
   </div>
+
+  <script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      let passwordField = document.getElementById('password');
+      let toggleButton = document.getElementById('togglePassword');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleButton.innerHTML = `{{ eyefill_icon() }}`;
+      } else {
+        passwordField.type = 'password';
+        toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
+      }
+    });
+  </script>
   
-  {% endblock %}
+{% endblock %}
+

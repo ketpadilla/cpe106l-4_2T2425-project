@@ -16,6 +16,7 @@ food_api = os.getenv("FOOD_API")
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client[database]
 
+
 @app.before_request
 def connect_to_db():
   try:
