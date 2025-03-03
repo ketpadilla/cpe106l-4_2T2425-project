@@ -10,22 +10,22 @@ local_api = LocalAPI(db, food_api)
 def configure_routes(app, WEB_NAME):
   @app.route("/")
   def index(page_title = WEB_NAME):
-      return render_template('index.html', title=page_title)
+    return render_template('index.html', title=page_title)
   
   @app.route("/update-calorie-intake/", methods=['POST'])
   @login_required
   def update_calories():
-      data = request.get_json()
-      recommended_calorie_intake = data.get('recommended_calorie_intake')
+    data = request.get_json()
+    recommended_calorie_intake = data.get('recommended_calorie_intake')
 
-      if not recommended_calorie_intake:
-          return jsonify({"error": "Recommended calorie intake is required"}), 400
+    if not recommended_calorie_intake:
+      return jsonify({"error": "Recommended calorie intake is required"}), 400
 
-      result = User().update_calorie_intake(session['user']['email'], recommended_calorie_intake)
-      
-      if result:
-          return jsonify({"message": "Calorie intake updated successfully", "recommended_calorie_intake": recommended_calorie_intake}), 200
-      return jsonify({"error": "Failed to update calorie intake"}), 500
+    result = User().update_calorie_intake(session['user']['email'], recommended_calorie_intake)
+    
+    if result:
+      return jsonify({"message": "Calorie intake updated successfully", "recommended_calorie_intake": recommended_calorie_intake}), 200
+    return jsonify({"error": "Failed to update calorie intake"}), 500
 
   @app.route("/sign-in/", methods=['GET', 'POST'])
   def login():
