@@ -1,7 +1,9 @@
-from flask import Flask, session, url_for, redirect, render_template, request
+from flask import Flask, session, url_for, redirect, render_template, request, jsonify
 from .user.models import User, LocalAPI
 from .utils import login_required 
 from .app import db, food_api
+from passlib.hash import pbkdf2_sha256
+
 
 local_api = LocalAPI(db, food_api)
 
@@ -81,6 +83,19 @@ def configure_routes(app, WEB_NAME):
   @app.route("/api/food-details/<fdc_id>", methods=['GET'])
   def food_details(fdc_id):
     return local_api.food_details(fdc_id)
+
+  @app.route("/api/add-custom-food", methods =['POST'])
+  def add_custom_food():
+      data = request.get_json()
+      food_name = data.get('foodName')
+      serving_size = data.get('servingSize')
+      calories = data.get('calories')
+      brand_owner = data.get('brandOwner')
+      custom_food_category = data.get('customFoodCategory')
+      ingredients = data.get('ingredients')
+
+      response, status = local_api.add_custom_food(food_name, calories, serving_size, brand_owner, custom_food_category, ingredients)
+      return jsonify(response), status
 
   @app.route("/api/add-favorite", methods=['POST'])
   def add_favorite():
