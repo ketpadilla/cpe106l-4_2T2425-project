@@ -149,37 +149,44 @@ class LocalAPI:
 		except requests.RequestException as e:
 			return jsonify({'error': f'Request failed: {e}'}), 500
 
-	def add_custom_food(self, food_name, calories, serving_size=None , brand_owner=None, custom_food_category=None, ingredients=None):
-		try:
-			if not food_name or not calories:
-				return {"error": 'Missing required fields'}, 400
-			
-			counter = self.db["counter"].find_one_and_update(
+	def add_custom_food(self, food_name, calories, serving_size=None, brand_owner=None, custom_food_category=None, ingredients=None):
+		if not food_name or not calories:
+			return {"error": 'Missing required fields'}, 400
+
+		existing_food = self.db["custom-foods"].find_one({
+			"Description": food_name,
+			"Brand Owner": brand_owner or "N/A",
+			"Custom Food Category": custom_food_category or "N/A",
+			"Calories": calories,
+			"Ingredients": ingredients or "N/A",
+			"Serving Size": serving_size or 100
+		})
+		if existing_food:
+			return {"error": "Food item with the same data already exists"}, 400
+
+		counter = self.db["counter"].find_one_and_update(
 			{"_id": "fdc_id"},
 			{"$inc": {"sequence_value": 1}},  # Increment counter by 1
 			return_document=ReturnDocument.AFTER,
-			upsert=True # Create the document if it doesn't exist
-			)
-			
-			fdc_id = counter["sequence_value"]
+			upsert=True  # Create the document if it doesn't exist
+		)
 
-			new_food = {
-				"_id": str(ObjectId()),
-				"Food Class": "Custom",
-				"FDC ID": fdc_id,  # TO DO
-				"Description": food_name,
-				"Brand Owner": brand_owner or "N/A",
-				"Custom Food Category": custom_food_category or "N/A",
-				"Calories": calories,
-				"Ingredients": ingredients or "N/A",
-				"Serving Size": serving_size or 100,
-			}
+		fdc_id = counter["sequence_value"]
 
-			self.db["custom-foods"].insert_one(new_food)
-			return {"message": "Food item added successfully!"}, 200
-		except Exception as e:
-			print(f"Error adding custom food: {e}")
-			return {"error": "Failed to add custom food"}, 500
+		new_food = {
+			"_id": str(ObjectId()),
+			"Food Class": "Custom",
+			"FDC ID": fdc_id,
+			"Description": food_name,
+			"Brand Owner": brand_owner or "N/A",
+			"Custom Food Category": custom_food_category or "N/A",
+			"Calories": calories,
+			"Ingredients": ingredients or "N/A",
+			"Serving Size": serving_size or 100,
+		}
+
+		self.db["custom-foods"].insert_one(new_food)
+		return {"message": "Food item added successfully!"}, 200
         
 
 	def _format_db_search_results(self, branded_results, survey_results):

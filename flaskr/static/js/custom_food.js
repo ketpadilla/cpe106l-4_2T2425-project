@@ -22,12 +22,12 @@ $(document).ready(function() {
                 ingredients: ingredients
             }),
             success: function(response){
-                alert('Food item added successefully')
-                $('#regFoodModal').modal('hide');
-                $('#customFoodForm')[0].reset();    
+                $('#customFoodMessage').removeClass('alert-danger').addClass('alert-success').text(response.message).show();
+                $('#customFoodForm')[0].reset();
             },
             error: function(error){
-                alert('Failed to add food item. Try again.')
+                let errorMessage = error.responseJSON ? error.responseJSON.error : 'Failed to add food item. Try again.';
+                $('#customFoodMessage').removeClass('alert-success').addClass('alert-danger').text(errorMessage).show();
             }
         });
     });
