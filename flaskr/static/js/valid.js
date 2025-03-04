@@ -10,7 +10,9 @@ passwordInput.onfocus = function() {
 }
 
 passwordInput.onblur = function() {
-  document.getElementById("message").style.display = "none";
+  if (passwordInput.value === "") {
+    messageBox.style.display = "none";
+  }
 }
 
 passwordInput.onkeyup = function() {

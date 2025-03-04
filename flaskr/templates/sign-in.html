@@ -63,18 +63,18 @@
 
   <script>
     document.getElementById('togglePassword').addEventListener('click', function () {
-      let passwordField = document.getElementById('password');
-      let toggleButton = document.getElementById('togglePassword');
-      
-      if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        toggleButton.innerHTML = `{{ eyefill_icon() }}`;
-      } else {
-        passwordField.type = 'password';
-        toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
-      }
-    });
+    let passwordField = document.getElementById('password');
+    let toggleButton = document.getElementById('togglePassword');
+
+    if (passwordField.type === 'password') {
+      passwordField.type = 'text';
+      toggleButton.innerHTML = `{{ eyefill_icon() }}`;
+    } else {
+      passwordField.type = 'password';
+      toggleButton.innerHTML = `{{ eyeslash_icon() }}`;
+    }
+  });
   </script>
-  
+
 {% endblock %}
 
