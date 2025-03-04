@@ -3,22 +3,21 @@ from passlib.hash import pbkdf2_sha256
 from bson import ObjectId
 from ..app import db
 from ..utils import login_required
-import re
-import requests
+import re, requests, time
 
 class User:
   def start_session(self, user):
-    del user['password']
+    user_copy = user.copy() 
+    user_copy.pop("password", None)
     session['logged_in'] = True
-    session['user'] = user
-
-    return jsonify(user), 200
+    session['user'] = user_copy
+    return jsonify(user_copy), 200
 
   def sign_up(self):
+    # TODO: to check for possible optimizations
     valid_object_id = str(ObjectId())
     weight = float(request.form.get('weight', 0))
     height = float(request.form.get('height', 0))
-    bmi = weight / ((height / 100) ** 2) if weight > 0 and height > 0 else None
 
     user = {
       "_id": valid_object_id,
@@ -30,7 +29,7 @@ class User:
       "activity_level": request.form.get('activity_level'),
       "dob": request.form.get('dob'),
       "sex": request.form.get('sex'),
-      "bmi": bmi
+      "bmi": self._calculate_bmi(weight, height)
     }
 
     if db.users.find_one({"email": user['email']}):
@@ -82,105 +81,122 @@ class User:
       return False
 
   @login_required
-  def calculate_bmi(self):
-    user = session.get('user', {})
-    weight = float(user.get('weight', 0))
-    height = float(user.get('height', 0))
-
-    if weight <= 0 or height <= 0:
-      return jsonify({"error": "Invalid weight or height"}), 400
-
-    calculated_bmi = weight / ((height / 100) ** 2)
-    current_bmi = user.get('bmi')
-
-    if calculated_bmi == current_bmi:
-      return jsonify({"message": "BMI unchanged"}), 200 
-
-    user_id = user.get("_id")
-    db.users.update_one({"_id": ObjectId(user_id)}, {"$set": {"bmi": calculated_bmi}})
-    session['user']['bmi'] = calculated_bmi
-    return jsonify({"bmi": calculated_bmi, "message": "BMI updated successfully"}), 200
-
-  @login_required
   def update_profile(self):
     user = session.get("user", {})
+    email = user["email"]
 
     updated_data = {
-      "name": request.form.get("name", ""),
-      "email": request.form.get("email", ""),
-      "sex": request.form.get("sex", ""),
-      "dob": request.form.get("dob", ""),
-      "weight": float(request.form.get("weight", 0) or 0),
-      "height": float(request.form.get("height", 0) or 0),
-      "activity_level": request.form.get("activity_level", ""),
-      "recommended_calorie_intake": float(request.form.get("daily_calorie_intake", 0) or 0)
+      key: request.form.get(key, "").strip() for key in ["name", "email", "sex", "dob", "activity_level"]
     }
 
-    current_data = db.users.find_one({"email": user['email']})
-    if current_data == updated_data:
-      print("No changes detected. Skipping update.")
-      return jsonify({"message": "No changes detected."}), 200
+    updated_data["weight"] = float(request.form.get("weight", 0) or 0)
+    updated_data["height"] = float(request.form.get("height", 0) or 0)
+    # TODO: Update recommended daily calorie intake
 
-    # update the bmi in mongodb
-    if (updated_data["weight"] != current_data.get("weight") or
-        updated_data["height"] != current_data.get("height")):
-      weight = updated_data["weight"]
-      height = updated_data["height"]
-      bmi = weight / ((height / 100) ** 2) if weight > 0 and height > 0 else None
-      updated_data["bmi"] = bmi
+    if "weight" in updated_data or "height" in updated_data:
+      updated_data["bmi"] = self._calculate_bmi(updated_data["weight"], updated_data["height"])
 
-    result = db.users.update_one({"email": user["email"]}, {"$set": updated_data})
-    print(f"Modified Count: {result.modified_count}")
+    result = db.users.update_one({"email": email}, {"$set": updated_data})
 
-    session["user"].update(updated_data)
-    session.modified = True
+    if result.modified_count > 0:
+      session["user"].update(updated_data)
+      session.modified = True
+      return jsonify({"message": "Profile updated successfully", "bmi": session["user"].get("bmi")}), 200
 
-    print("Profile updated successfully!", "success")
-    return jsonify({
-      "message": "Profile updated successfully",
-      "bmi": session["user"].get("bmi", None)
-    }), 200
+    return jsonify({"message": "No changes detected."}), 200
+
+  def _calculate_bmi(self, weight, height):
+    return weight / ((height / 100) ** 2) if weight > 0 and height > 0 else None
+
+  @login_required
+  def add_to_favorites(self, email, fdc_id):
+    user = db.users.find_one({"email": email})
+    if not user:
+      return jsonify({"error": "User not found"}), 404
+
+    favorites = user.get("favorites", [])
+
+    if fdc_id not in favorites:
+      db.users.update_one(
+        {"email": email},
+        {"$push": {"favorites": fdc_id}}
+      )
+
+    return jsonify({"message": "Added to favorites successfully"}), 200
 
 class LocalAPI:
   def __init__(self, db, food_api):
     self.db = db
     self.food_api = food_api
 
+  import time
+
   def search_database(self):
     query = request.args.get('query', '').strip()
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 10))
+
     if not query:
       return jsonify([])
 
-    regex_query = re.compile(f'^{re.escape(query)}', re.IGNORECASE)
-    branded_results = self.db["branded-foods"].find({"Description": regex_query})
-    survey_results = self.db["survey-foods"].find({"Description": regex_query})
+    start_time = time.time()  
 
-    return jsonify(self._format_db_search_results(branded_results, survey_results))
+    def atlas_search(collection, index_name):
+      pipeline = [
+        {
+          "$search": {
+            "index": index_name,  
+            "text": {
+              "query": query,
+              "path": "Description",
+              "fuzzy": {"maxEdits": 1}  
+            }
+          }
+        },
+        {"$skip": (page - 1) * limit},
+        {"$limit": limit}
+      ]
+      return list(self.db[collection].aggregate(pipeline))
+
+    branded_results = atlas_search("branded-foods", "FoodDesc_BF")
+    survey_results = atlas_search("survey-foods", "FoodDesc_SF")
+    custom_results = atlas_search("custom-foods", "FoodDesc_CF")
+
+    search_time = time.time() - start_time  
+    print("-" * 40)  
+    print(f"Search execution time: {search_time:.4f} seconds")  
+    print("-" * 40, end="\n\n")  
+
+    has_more = len(branded_results) + len(survey_results) + len(custom_results) >= limit
+
+    return jsonify({
+        "results": self._format_db_search_results(branded_results, survey_results, custom_results),
+        "has_more": has_more
+    })
 
   def food_details(self, fdc_id):
     url = f"https://api.nal.usda.gov/fdc/v1/food/{fdc_id}?api_key={self.food_api}"
 
     try:
       response = requests.get(url)
-      if response.status_code == 200:
-        data = response.json()
-        return jsonify(self._format_usda_food_details(data))
-      else:
-        return jsonify({'error': 'Food details not found'}), 404
-    except requests.RequestException as e:
-      return jsonify({'error': f'Request failed: {e}'}), 500
+      response.raise_for_status()
+      return jsonify(self._format_usda_food_details(response.json()))
+    except requests.exceptions.HTTPError as e:
+      return jsonify({'error': f'HTTP error: {e}'}), response.status_code
+    except requests.exceptions.RequestException as e:
+      return jsonify({'error': f'API request failed: {e}'}), 500
 
-  def _format_db_search_results(self, branded_results, survey_results):
+  def _format_db_search_results(self, *results):
     return [
       {
         'id': str(result['_id']),
-        'name': result['Description'].title(),
+        'name': result.get('Description', '').title(),
         'calories': result.get('Calories', 'N/A'),
         'serving_size': result.get('Serving Size', 'N/A'),
         'brand': result.get('Brand Owner', 'N/A').title() if 'Brand Owner' in result else None,
         'fdcId': result.get('FDC ID', None)
       }
-      for result in list(branded_results) + list(survey_results)
+      for result_set in results for result in result_set
     ]
 
   def _format_usda_food_details(self, data):

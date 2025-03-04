@@ -67,7 +67,6 @@ def configure_routes(app, WEB_NAME):
     
     return render_template('forgot-password.html', title='Forgot Password')
 
-  
   @app.route("/sign-out/")
   def logout():
     User().sign_out()
@@ -100,15 +99,29 @@ def configure_routes(app, WEB_NAME):
   def food_details(fdc_id):
     return local_api.food_details(fdc_id)
 
-  @app.route("/api/add-favorite", methods=['POST'])
+  @app.route('/api/add-favorite', methods=['POST'])
+  @login_required
   def add_favorite():
-    #TODO
-    pass
+    data = request.get_json()
+    fdc_id = data.get('fdcId')
 
-  @app.route("/api/add-daily-intake", methods=['POST'])
+    if not fdc_id:
+      return jsonify({"error": "Missing food ID"}), 400
+
+    email = session['user']['email']
+    return User().add_to_favorites(email, fdc_id)
+
+  @app.route('/api/add-daily-intake', methods=['POST'])
   def add_daily_intake():
-    #TODO
-    pass
+    data = request.get_json()
+    fdc_id = data.get('fdcId')
+
+    if not fdc_id:
+      return jsonify({"error": "Missing food ID"}), 400
+
+    print(data)
+
+    return jsonify({"message": "Added to daily intake successfully"}), 200
 
   @app.route("/calories/")
   @login_required

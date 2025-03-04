@@ -9,21 +9,19 @@ BUGS:
   
 TO DO:
 In Profile:
-  - Calculate Recommended Calorie Intake
-  - Delete Food Items in Personal List
-  - Implement with /api/add-favorite
+  - Calculate Recommended Calorie Intake (to complete)
+  - Implement UI of Personal List (w/ delete food items)
 
 In Search Food:
-  - Optimize search results
-  - Organize by closest results
-  - Create search indexes (2)
-  - Add Custom Meal Items (below title)
+  - Add Custom Meal Items (below title) (in progress)
+  - Flag items that have been added to favorites (revise implementation in models.py and search.js)
   
 View Calorie History
 
 Record Daily Calorie Intake
-  - Implement with /api/add-daily-intake
+  - Fully implement /api/add-daily-intake
+  - Get total calories from recommended_calorie_intake (revise to auto calculate calorie intake to maintain weight based on parameters)
+  - Create a new class to store intake for the day
 
 Misc:
-  In-site dark mode toggle
-  Password and email validation
+  In-site dark mode toggle (to remove)

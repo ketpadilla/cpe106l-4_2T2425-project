@@ -26,11 +26,14 @@ def connect_to_db():
     stats = db.command("dbStats")
     collections = db.list_collection_names()
 
+    print()
+    print ("-" * 25)
     print("Collections in the database:", collections)
     print(f"Database Storage Size: {stats['storageSize']} bytes")
     print(f"Database Data Size: {stats['dataSize']} bytes")
     print(f"Total Documents: {stats['objects']}")
     print(f"Index Size: {stats['indexSize']} bytes")
+    print ("-" * 25, end="\n\n")
 
   except Exception as e:
     print(f"Error: {e}")

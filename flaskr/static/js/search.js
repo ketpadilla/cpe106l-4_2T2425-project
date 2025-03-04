@@ -1,66 +1,53 @@
 $(document).ready(function() {
-  let currentRequest = null; 
+  let currentRequest = null;
+  let currentPage = 1;
+  const limit = 10;
 
-  $('#searchQuery').on('input', function() {
-    let query = $(this).val().trim();
-
+  function performSearch(reset = true) {
+    let query = $('#searchQuery').val().trim();
     if (query === "") {
-      if (currentRequest) {
-        currentRequest.abort(); 
-      }
+      if (currentRequest) currentRequest.abort();
       $('#results').empty();
+      $('#viewMoreContainer').remove();
       return;
     }
 
-    $('#results').html("<p>Loading...</p>");
-
-    if (currentRequest) {
-      currentRequest.abort();
+    if (reset) {
+      $('#results').html("<p>Loading...</p>");
+      currentPage = 1;
     }
+
+    if (currentRequest) currentRequest.abort();
 
     currentRequest = $.ajax({
       url: '/api/search-food/',
       type: 'GET',
-      data: { query: query },
+      data: { query: query, page: currentPage, limit: limit },
       success: function(response) {
-        let resultsHTML = "";
-        if (response.length > 0) {
-          resultsHTML = "<ul class='list-group'>";
-          response.forEach(item => {
-            let brandText = item.brand ? `<small class="text-muted" style="font-size: 12px;">Brand: ${item.brand}</small>` : "";
-            let addButtons = userLoggedIn == "true"
-            ? `<div class='d-flex flex-column'>
-                <button class='btn btn-success btn-sm add-to-daily-intake mb-2' data-fdcid="${item.fdcId}" data-name="${item.name}" data-calories="${item.calories}">
-                  ${addIconHTML} Add to Daily Intake
-                </button>
-                <button class='btn btn-danger btn-sm add-to-favorites' data-fdcid="${item.fdcId}">
-                  ${favoritesIconHTML} Add to Favorites
-                </button>
-              </div>`
-            : `<button class='btn btn-secondary btn-sm d-flex align-items-center justify-content-center align-middle lock-login' 
-                style="width: 150px; height: 36px; font-size: 14px;">
-                <span class="d-flex align-items-center">${lockIconHTML} <span class="ml-12 px-2">Log in to Add</span></span>
-              </button>`;
+        let resultsHTML = reset ? "<ul class='list-group'>" : $('#results').html();
         
-
+        if (response.results.length > 0) {
+          response.results.forEach(item => {
+            let brandText = item.brand ? `<small class="text-muted">Brand: ${item.brand}</small>` : "";
+            let addButtons = userLoggedIn === "true"
+              ? `<div class='d-flex flex-column'>
+                  <button class='btn btn-success btn-sm add-to-daily-intake mb-2' data-fdcid="${item.fdcId}" data-name="${item.name}" data-calories="${item.calories}">${addIconHTML} Add to Daily Intake</button>
+                  <button class='btn btn-danger btn-sm add-to-favorites' data-fdcid="${item.fdcId}">${favoritesIconHTML} Add to Favorites</button>
+                </div>`
+              : `<button class='btn btn-secondary btn-sm lock-login'>Log in to Add</button>`;
             let learnMoreButton = item.fdcId 
-            ? `<button class='btn btn-link p-0 learn-more text-muted' data-fdcid="${item.fdcId}" style="text-decoration: underline !important; font-style: italic; background: none; border: none; font-size: 0.70em;">Learn More</button>` 
-            : "";
+              ? `<button class='btn btn-link p-0 learn-more text-muted' data-fdcid="${item.fdcId}" style="text-decoration: underline !important; font-style: italic; background: none; border: none; font-size: 0.70em;">Learn More</button>` 
+              : "";
 
             resultsHTML += `
               <li class='list-group-item d-flex justify-content-between align-items-center'>
                 <div>
-                  <span style="font-family: 'Libre Franklin', sans-serif; font-size: 16px;">${item.name}</span><br>
-                  <small style="font-family: 'Sofia Sans', sans-serif; font-size: 14px;">
-                    Calories: <span style="color: #e67e22;">${item.calories}</span> kcal | 
-                    Serving Size: <span style="color: #2ecc71;">${item.serving_size}</span>
-                  </small><br>
+                  <span>${item.name}</span><br>
+                  <small>Calories: ${item.calories} kcal | Serving Size: ${item.serving_size}</small><br>
                   ${brandText}<br>
                   ${learnMoreButton}
                 </div>
-                <div class="d-flex flex-column align-items-center justify-content-center gap-2">
-                  <div>${addButtons}</div>
-                </div>
+                <div>${addButtons}</div>
               </li>
             `;
           });
@@ -69,31 +56,91 @@ $(document).ready(function() {
           resultsHTML = "<p>No results found</p>";
         }
         $('#results').html(resultsHTML);
+
+        if (response.has_more) {
+          if (!$('#viewMoreContainer').length) {
+            $('#results').after(`
+              <div id="viewMoreContainer" class="d-flex justify-content-center mt-3">
+                <button id="viewMoreBtn" class="btn btn-primary">View More</button>
+              </div>
+            `);
+          }
+        } else {
+          $('#viewMoreContainer').remove();
+        } 
       },
       error: function(xhr, status, error) {
-        if (status !== "abort") { 
-          console.log("Error:", error);
-          $('#results').html("<p>Failed to retrieve data</p>");
+        if (status !== "abort") $('#results').html("<p>Failed to retrieve data</p>");
+      }
+    });
+  }
+
+  $('#searchQuery').on('input', function() {
+    performSearch(true);
+  });
+
+  $(document).on('click', '#viewMoreBtn', function() {
+    if (currentRequest) currentRequest.abort();
+  
+    let query = $('#searchQuery').val().trim();
+    let offset = $('.list-group-item').length; // Count existing results
+  
+    currentRequest = $.ajax({
+      url: '/api/search-food/',
+      type: 'GET',
+      data: { query: query, offset: offset, limit: limit }, // Ensure limit is passed
+      success: function(response) {
+        if (response.results.length > 0) {
+          let resultsHTML = response.results.map(item => {
+            let brandText = item.brand ? `<small class="text-muted">Brand: ${item.brand}</small>` : "";
+            let addButtons = userLoggedIn === "true"
+              ? `<div class='d-flex flex-column'>
+                  <button class='btn btn-success btn-sm add-to-daily-intake mb-2' data-fdcid="${item.fdcId}" data-name="${item.name}" data-calories="${item.calories}">${addIconHTML} Add to Daily Intake</button>
+                  <button class='btn btn-danger btn-sm add-to-favorites' data-fdcid="${item.fdcId}">${favoritesIconHTML} Add to Favorites</button>
+                </div>`
+              : `<button class='btn btn-secondary btn-sm lock-login'>Log in to Add</button>`;
+  
+            return `
+              <li class='list-group-item d-flex justify-content-between align-items-center'>
+                <div>
+                  <span>${item.name}</span><br>
+                  <small>Calories: ${item.calories} kcal | Serving Size: ${item.serving_size}</small><br>
+                  ${brandText}
+                </div>
+                <div>${addButtons}</div>
+              </li>
+            `;
+          }).join('');
+  
+          $('.list-group').append(resultsHTML);
+        }
+  
+        if (!response.has_more) {
+          $('#viewMoreContainer').remove();
+        }
+      },
+      error: function(xhr, status) {
+        if (status !== "abort") {
+          $('#viewMoreBtn').text("Failed to load more").prop("disabled", true);
         }
       }
     });
   });
-
-  // Redirect to login when lock icon button is clicked
+  
   $(document).on('click', '.lock-login', function() {
     window.location.href = '/sign-in/';
   });
 
-  // Add to Favorites
   $(document).on('click', '.add-to-favorites', function() {
     let fdcId = $(this).data('fdcid');
     let button = $(this);
-
+    
     $.ajax({
       url: '/api/add-favorite',
       type: 'POST',
-      data: { fdcId: fdcId },
-      success: function(response) {
+      contentType: "application/json",
+      data: JSON.stringify({ fdcId: fdcId }),
+      success: function() {
         button.text('✔ Added to Favorites').prop('disabled', true);
       },
       error: function() {
@@ -102,18 +149,16 @@ $(document).ready(function() {
     });
   });
 
-  // Add to Daily Intake
   $(document).on('click', '.add-to-daily-intake', function() {
     let fdcId = $(this).data('fdcid');
-    let name = $(this).data('name');
-    let calories = $(this).data('calories');
     let button = $(this);
-
+    
     $.ajax({
       url: '/api/add-daily-intake',
       type: 'POST',
-      data: { fdcId: fdcId, name: name, calories: calories },
-      success: function(response) {
+      contentType: "application/json",
+      data: JSON.stringify({ fdcId: fdcId }),
+      success: function() {
         button.text('✔ Added to Intake').prop('disabled', true);
       },
       error: function() {
@@ -122,11 +167,10 @@ $(document).ready(function() {
     });
   });
 
-
   $(document).on('click', '.learn-more', function() {
     let fdcId = $(this).data('fdcid');
     $('#foodModalBody').html("<p>Loading details...</p>");
-
+    
     $.ajax({
       url: `/api/food-details/${fdcId}`,
       type: 'GET',
