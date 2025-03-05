@@ -123,6 +123,37 @@ class User:
       )
 
     return jsonify({"message": "Added to favorites successfully"}), 200
+  
+  @login_required
+  def get_favorites(self, email):
+      user = db.users.find_one({"email": email}, {"favorites": 1})
+      if not user or "favorites" not in user:
+          return jsonify({"favorites": []}), 200
+      
+      favorites_details = []
+      for fdc_id in user["favorites"]:
+          food = db.foods.find_one({"FDC ID": fdc_id})
+          if food:
+              favorites_details.append({
+                  "name": food.get("Description", "Unknown"),
+                  "calories": food.get("Calories", "N/A"),
+                  "serving_size": food.get("Serving Size", "N/A"),
+                  "brand": food.get("Brand Owner", None),
+                  "fdcId": fdc_id
+              })
+      
+      return jsonify({"favorites": favorites_details}), 200
+
+  @login_required
+  def remove_from_favorites(self, email, fdc_id):
+      result = db.users.update_one(
+          {"email": email},
+          {"$pull": {"favorites": fdc_id}}
+      )
+      
+      if result.modified_count > 0:
+          return jsonify({"message": "Removed from favorites successfully"}), 200
+      return jsonify({"error": "Failed to remove from favorites or item not found"}), 400
 
 class LocalAPI:
   def __init__(self, db, food_api):

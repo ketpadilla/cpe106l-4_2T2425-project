@@ -111,9 +111,22 @@
     </div>
   </div>
 
+  <div class="container center mt-4">
+    <div class="col-md-8">
+      <div class="card shadow-lg custom-card-width">
+        <div class="card-body">
+          <h5 class="card-title">Favorites</h5>
+          <hr>
+          <!-- Favorites will be loaded here by favorite.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+          
 
   <script src="{{ url_for('static', filename='js/age.js') }}"></script>
   <script src="{{ url_for('static', filename='js/calculate-calorie.js') }}"></script>
   <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/favorite.js') }}"></script>
   
 {% endblock %}

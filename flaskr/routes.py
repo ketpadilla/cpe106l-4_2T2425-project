@@ -122,6 +122,18 @@ def configure_routes(app, WEB_NAME):
     print(data)
 
     return jsonify({"message": "Added to daily intake successfully"}), 200
+  
+  @app.route('/api/remove-favorite', methods=['POST'])
+  @login_required
+  def remove_favorite():
+      data = request.get_json()
+      fdc_id = data.get('fdcId')
+      
+      if not fdc_id:
+          return jsonify({"error": "Missing food ID"}), 400
+          
+      email = session['user']['email']
+      return User().remove_from_favorites(email, fdc_id)
 
   @app.route("/calories/")
   @login_required
@@ -136,3 +148,37 @@ def configure_routes(app, WEB_NAME):
   @app.errorhandler(404)
   def page_not_found(error):
     return render_template('page-not-found.html', title = '404'), 404
+  
+  @app.route('/api/get-favorites', methods=['GET'])
+  @login_required
+  def get_favorites():
+      email = session['user']['email']
+      user_doc = db.users.find_one({"email": email})
+      if not user_doc:
+          return jsonify({"favorites": []})
+      
+      # Get the list of favorite IDs
+      favorites = user_doc.get("favorites", [])
+      favorite_details = []
+      
+      # Get details for each favorite
+      for fdc_id in favorites:
+          # Try to find food in branded-foods collection
+          food = db.get_collection("branded-foods").find_one({"FDC ID": fdc_id})
+          if not food:
+              # Try to find in survey-foods collection
+              food = db.get_collection("survey-foods").find_one({"FDC ID": fdc_id})
+          if not food:
+              # Try to find in custom-foods collection
+              food = db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
+              
+          if food:
+              favorite_details.append({
+                  'fdcId': fdc_id,
+                  'name': food.get('Description', '').title(),
+                  'calories': food.get('Calories', 'N/A'),
+                  'serving_size': food.get('Serving Size', 'N/A'),
+                  'brand': food.get('Brand Owner', '').title() if 'Brand Owner' in food else None
+              })
+      
+      return jsonify({"favorites": favorite_details})
