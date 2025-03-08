@@ -1,10 +1,10 @@
-from flask import Flask, jsonify, request, session
+from flask import jsonify, request, session
 from passlib.hash import pbkdf2_sha256
 from bson import ObjectId
+from pymongo import ReturnDocument
+import requests, time
 from ..app import db
 from ..utils import login_required
-import re, requests, time
-from pymongo import ReturnDocument
 
 class User:
   def start_session(self, user):
@@ -127,120 +127,120 @@ class User:
   
   @login_required
   def get_favorites(self, email):
-      user = db.users.find_one({"email": email}, {"favorites": 1})
-      if not user or "favorites" not in user:
-          return jsonify({"favorites": []}), 200
-      
-      favorites_details = []
-      for fdc_id in user["favorites"]:
-          food = db.foods.find_one({"FDC ID": fdc_id})
-          if food:
-              favorites_details.append({
-                  "name": food.get("Description", "Unknown"),
-                  "calories": food.get("Calories", "N/A"),
-                  "serving_size": food.get("Serving Size", "N/A"),
-                  "brand": food.get("Brand Owner", None),
-                  "fdcId": fdc_id
-              })
-      
-      return jsonify({"favorites": favorites_details}), 200
+    user = db.users.find_one({"email": email}, {"favorites": 1})
+    if not user or "favorites" not in user:
+      return jsonify({"favorites": []}), 200
+    
+    favorites_details = []
+    for fdc_id in user["favorites"]:
+      food = db.foods.find_one({"FDC ID": fdc_id})
+      if food:
+        favorites_details.append({
+          "name": food.get("Description", "Unknown"),
+          "calories": food.get("Calories", "N/A"),
+          "serving_size": food.get("Serving Size", "N/A"),
+          "brand": food.get("Brand Owner", None),
+          "fdcId": fdc_id
+          })
+    
+    return jsonify({"favorites": favorites_details}), 200
 
   @login_required
   def remove_from_favorites(self, email, fdc_id):
-      result = db.users.update_one(
-          {"email": email},
-          {"$pull": {"favorites": fdc_id}}
-      )
-      
-      if result.modified_count > 0:
-          return jsonify({"message": "Removed from favorites successfully"}), 200
-      return jsonify({"error": "Failed to remove from favorites or item not found"}), 400
+    result = db.users.update_one(
+      {"email": email},
+      {"$pull": {"favorites": fdc_id}}
+    )
+    
+    if result.modified_count > 0:
+      return jsonify({"message": "Removed from favorites successfully"}), 200
+    return jsonify({"error": "Failed to remove from favorites or item not found"}), 400
 
 class LocalAPI:
   def __init__(self, db, food_api):
     self.db = db
     self.food_api = food_api
 
-  from tabulate import tabulate
-
-  def search_database(self):
-      query = request.args.get('query', '').strip()
-      page = int(request.args.get('page', 1))
-      limit = int(request.args.get('limit', 10))
-
-      if not query:
-        return jsonify([])
-
-      start_time = time.time()
-
-      branded_count = self.db["branded-foods"].count_documents({})
-      survey_count = self.db["survey-foods"].count_documents({})
-      custom_count = self.db["custom-foods"].count_documents({})
-
-      total_docs = branded_count + survey_count + custom_count
-      branded_weight = total_docs / branded_count if branded_count else 1
-      survey_weight = total_docs / survey_count if survey_count else 1
-      custom_weight = total_docs / custom_count if custom_count else 1
-
-      def atlas_search(collection, index_name, weight):
-        pipeline = [
-            {
-              "$search": {
-                "index": index_name,
-                "compound": {
-                  "should": [
-                    {
-                      "phrase": { 
-                        "query": query,
-                        "path": "Description",
-                        "slop": 0,
-                      }
-                  },
-                  {
-                      "text": {  
-                        "query": query,
-                        "path": "Description",
-                        "score": {"boost": {"value": 20}}  
-                      }
-                  },
-                  {
-                      "text": { 
-                        "query": query,
-                        "path": "Description",
-                        "fuzzy": {"maxEdits": 1, "prefixLength": 2},
-                        "score": {"boost": {"value": 5}}
-                      }
-                    }
-                  ]
+  def atlas_search(self, collection, index_name, weight, query, page, limit):
+    pipeline = [
+        {
+          "$search": {
+            "index": index_name,
+            "compound": {
+              "should": [
+                {
+                  "phrase": { 
+                    "query": query,
+                    "path": "Description",
+                    "slop": 0,
+                  }
+              },
+              {
+                  "text": {  
+                    "query": query,
+                    "path": "Description",
+                    "score": {"boost": {"value": 20}}  
+                  }
+              },
+              {
+                  "text": { 
+                    "query": query,
+                    "path": "Description",
+                    "fuzzy": {"maxEdits": 1, "prefixLength": 2},
+                    "score": {"boost": {"value": 5}}
+                  }
                 }
-              }
-            },
-            {
-              "$addFields": {
-                "searchScore": {"$meta": "searchScore"},
-                "adjustedScore": {"$multiply": [{"$meta": "searchScore"}, weight]}  
-              }
-            },
-            {"$sort": {"adjustedScore": -1}},  
-            {"$skip": (page - 1) * limit},
-            {"$limit": limit}
-        ]
-        return list(self.db[collection].aggregate(pipeline))
+              ]
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "searchScore": {"$meta": "searchScore"},
+            "adjustedScore": {"$multiply": [{"$meta": "searchScore"}, weight]}  
+          }
+        },
+        {"$sort": {"adjustedScore": -1}},  
+        {"$skip": (page - 1) * limit},
+        {"$limit": limit}
+    ]
 
-      branded_results = atlas_search("branded-foods", "FoodDesc_BF", branded_weight)
-      survey_results = atlas_search("survey-foods", "FoodDesc_SF", survey_weight)
-      custom_results = atlas_search("custom-foods", "FoodDesc_CF", custom_weight)
+    return list(self.db[collection].aggregate(pipeline))
+  
+  def search_database(self):
+    query = request.args.get('query', '').strip()
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 10))
 
-      all_results = branded_results + survey_results + custom_results
-      all_results.sort(key=lambda x: x["adjustedScore"], reverse=True)
+    if not query:
+      return jsonify([])
 
-      search_time = time.time() - start_time
-      print(f"\nSearch execution time: {search_time:.4f} seconds")
+    start_time = time.time()
 
-      return jsonify({
-          "results": self._format_db_search_results(all_results),
-          "has_more": len(all_results) >= limit
-      })
+    branded_count = self.db["branded-foods"].count_documents({})
+    survey_count = self.db["survey-foods"].count_documents({})
+    custom_count = self.db["custom-foods"].count_documents({})
+
+    total_docs = branded_count + survey_count + custom_count
+    branded_weight = total_docs / branded_count if branded_count else 1
+    survey_weight = total_docs / survey_count if survey_count else 1
+    custom_weight = total_docs / custom_count if custom_count else 1
+
+
+    branded_results = self.atlas_search("branded-foods", "FoodDesc_BF", branded_weight, query, page, limit)
+    survey_results = self.atlas_search("survey-foods", "FoodDesc_SF", survey_weight, query, page, limit)
+    custom_results = self.atlas_search("custom-foods", "FoodDesc_CF", custom_weight, query, page, limit)
+
+    all_results = branded_results + survey_results + custom_results
+    all_results.sort(key=lambda x: x["adjustedScore"], reverse=True)
+
+    search_time = time.time() - start_time
+    print(f"\nSearch execution time: {search_time:.4f} seconds")
+
+    return jsonify({
+        "results": self._format_db_search_results(all_results),
+        "has_more": len(all_results) >= limit
+    })
 
 
   def food_details(self, fdc_id):
@@ -293,7 +293,7 @@ class LocalAPI:
     }
 
   def add_custom_food(self, food_name, calories, serving_size=None, brand_owner=None, custom_food_category=None, ingredients=None):
-    # TODO: To proivde UI feedback
+    # TODO: To provide UI feedback
     if not food_name or not calories:
       return {"error": 'Missing required fields'}, 400
 

@@ -1,5 +1,4 @@
-from flask import Flask, session, url_for, redirect, render_template, request, redirect, jsonify
-from markupsafe import escape
+from flask import session, url_for, redirect, render_template, request, redirect, jsonify
 from passlib.hash import pbkdf2_sha256
 from .user.models import *
 from .utils import login_required 
@@ -152,8 +151,9 @@ def configure_routes(app, WEB_NAME):
   @app.route("/calories/")
   @login_required
   def calories():
+    # TODO
     return render_template('calories.html', title='Daily Calorie Intake')
-    
+      
   @app.route("/history/")
   @login_required
   def history():

@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request
+from flask import Flask
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
@@ -43,3 +43,4 @@ configure_routes(app, WEB_NAME='Trackabite')
 
 if __name__ == "__main__":
     app.run(debug=True)
+# %%
