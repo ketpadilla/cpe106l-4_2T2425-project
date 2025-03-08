@@ -149,22 +149,37 @@ $(document).ready(function() {
     });
   });
 
-  $(document).on('click', '.add-to-daily-intake', function() {
-    let fdcId = $(this).data('fdcid');
+  $(document).on("click", ".add-to-daily-intake", function () {
+    let fdcId = $(this).data("fdcid");
     let button = $(this);
-    
+
     $.ajax({
-      url: '/api/add-daily-intake',
-      type: 'POST',
-      contentType: "application/json",
-      data: JSON.stringify({ fdcId: fdcId }),
-      success: function() {
-        button.text('✔ Added to Intake').prop('disabled', true);
-      },
-      error: function() {
-        alert("Failed to add to daily intake. Try again.");
-      }
-    });
+        url: "/api/add-daily-intake",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ fdcId: fdcId }),
+        success: function (response) {
+            if (response.error) {
+                alert("Error: " + response.error);
+                return;
+            }
+            
+            button.text("✔ Added to Intake").prop("disabled", true);
+
+            alert("Food added! Calories: " + response.calories_added);
+
+            if (window.location.pathname.includes("calories.html")) {
+                location.reload();
+            }
+        },
+        error: function (xhr) {
+            let errorMessage = "Failed to add to daily intake.";
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            }
+            alert(errorMessage);
+        }
+      });
   });
 
   $(document).on('click', '.learn-more', function() {

@@ -8,20 +8,22 @@ BUGS:
   
   
 TO DO:
-In Profile:
-  - Calculate Recommended Calorie Intake (to complete)
-  - Implement UI of Personal List (w/ delete food items)
-
 In Search Food:
-  - Add Custom Meal Items (below title) (in progress)
-  - Flag items that have been added to favorites (revise implementation in models.py and search.js)
+  - alert user if item is already added into favorites
   
 View Calorie History
+  - data format:
+    - record_id (from _id of intake-daily)
+    - date
+    - total_calories
 
 Record Daily Calorie Intake
-  - Fully implement /api/add-daily-intake
-  - Get total calories from recommended_calorie_intake (revise to auto calculate calorie intake to maintain weight based on parameters)
-  - Create a new class to store intake for the day
+  - Fix intake-daily.js to properly handle excess in calories
+  - Show values of consumed and remaining
+  - Fix labels on charts
+  - Implement remove-daily-intake
+  - Create a new class to store intake functions
 
 Misc:
   In-site dark mode toggle (to remove)
+  Add debugging statement
