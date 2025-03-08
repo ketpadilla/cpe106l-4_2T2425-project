@@ -4,6 +4,7 @@ from bson import ObjectId
 from ..app import db
 from ..utils import login_required
 import re, requests, time
+from pymongo import ReturnDocument
 
 class User:
   def start_session(self, user):
@@ -160,8 +161,6 @@ class LocalAPI:
     self.db = db
     self.food_api = food_api
 
-  import time
-
   def search_database(self):
     query = request.args.get('query', '').strip()
     page = int(request.args.get('page', 1))
@@ -253,3 +252,42 @@ class LocalAPI:
       'attributes': attributes,
       'publication_date': data.get('publicationDate', 'N/A')
     }
+
+  def add_custom_food(self, food_name, calories, serving_size=None, brand_owner=None, custom_food_category=None, ingredients=None):
+    if not food_name or not calories:
+      return {"error": 'Missing required fields'}, 400
+
+    existing_food = self.db["custom-foods"].find_one({
+      "Description": food_name,
+      "Brand Owner": brand_owner or "N/A",
+      "Custom Food Category": custom_food_category or "N/A",
+      "Calories": calories,
+      "Ingredients": ingredients or "N/A",
+      "Serving Size": serving_size or 100
+    })
+    if existing_food:
+      return {"error": "Food item with the same data already exists"}, 400
+
+    counter = self.db["counter"].find_one_and_update(
+      {"_id": "fdc_id"},
+      {"$inc": {"sequence_value": 1}},  # Increment counter by 1
+      return_document=ReturnDocument.AFTER,
+      upsert=True  # Create the document if it doesn't exist
+    )
+
+    fdc_id = counter["sequence_value"]
+
+    new_food = {
+      "_id": ObjectId(),
+      "Food Class": "Custom",
+      "FDC ID": fdc_id,
+      "Description": food_name,
+      "Brand Owner": brand_owner or "N/A",
+      "Custom Food Category": custom_food_category or "N/A",
+      "Calories": calories,
+      "Ingredients": ingredients or "N/A",
+      "Serving Size": serving_size or 100,
+    }
+
+    self.db["custom-foods"].insert_one(new_food)
+    return {"message": "Food item added successfully!"}, 200
