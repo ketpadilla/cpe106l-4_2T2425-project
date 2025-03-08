@@ -161,48 +161,87 @@ class LocalAPI:
     self.db = db
     self.food_api = food_api
 
+  from tabulate import tabulate
+
   def search_database(self):
-    query = request.args.get('query', '').strip()
-    page = int(request.args.get('page', 1))
-    limit = int(request.args.get('limit', 10))
+      query = request.args.get('query', '').strip()
+      page = int(request.args.get('page', 1))
+      limit = int(request.args.get('limit', 10))
 
-    if not query:
-      return jsonify([])
+      if not query:
+        return jsonify([])
 
-    start_time = time.time()  
+      start_time = time.time()
 
-    def atlas_search(collection, index_name):
-      pipeline = [
-        {
-          "$search": {
-            "index": index_name,  
-            "text": {
-              "query": query,
-              "path": "Description",
-              "fuzzy": {"maxEdits": 1}  
-            }
-          }
-        },
-        {"$skip": (page - 1) * limit},
-        {"$limit": limit}
-      ]
-      return list(self.db[collection].aggregate(pipeline))
+      branded_count = self.db["branded-foods"].count_documents({})
+      survey_count = self.db["survey-foods"].count_documents({})
+      custom_count = self.db["custom-foods"].count_documents({})
 
-    branded_results = atlas_search("branded-foods", "FoodDesc_BF")
-    survey_results = atlas_search("survey-foods", "FoodDesc_SF")
-    custom_results = atlas_search("custom-foods", "FoodDesc_CF")
+      total_docs = branded_count + survey_count + custom_count
+      branded_weight = total_docs / branded_count if branded_count else 1
+      survey_weight = total_docs / survey_count if survey_count else 1
+      custom_weight = total_docs / custom_count if custom_count else 1
 
-    search_time = time.time() - start_time  
-    print("-" * 40)  
-    print(f"Search execution time: {search_time:.4f} seconds")  
-    print("-" * 40, end="\n\n")  
+      def atlas_search(collection, index_name, weight):
+        pipeline = [
+            {
+              "$search": {
+                "index": index_name,
+                "compound": {
+                  "should": [
+                    {
+                      "phrase": { 
+                        "query": query,
+                        "path": "Description",
+                        "slop": 0,
+                      }
+                  },
+                  {
+                      "text": {  
+                        "query": query,
+                        "path": "Description",
+                        "score": {"boost": {"value": 20}}  
+                      }
+                  },
+                  {
+                      "text": { 
+                        "query": query,
+                        "path": "Description",
+                        "fuzzy": {"maxEdits": 1, "prefixLength": 2},
+                        "score": {"boost": {"value": 5}}
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "searchScore": {"$meta": "searchScore"},
+                "adjustedScore": {"$multiply": [{"$meta": "searchScore"}, weight]}  
+              }
+            },
+            {"$sort": {"adjustedScore": -1}},  
+            {"$skip": (page - 1) * limit},
+            {"$limit": limit}
+        ]
+        return list(self.db[collection].aggregate(pipeline))
 
-    has_more = len(branded_results) + len(survey_results) + len(custom_results) >= limit
+      branded_results = atlas_search("branded-foods", "FoodDesc_BF", branded_weight)
+      survey_results = atlas_search("survey-foods", "FoodDesc_SF", survey_weight)
+      custom_results = atlas_search("custom-foods", "FoodDesc_CF", custom_weight)
 
-    return jsonify({
-        "results": self._format_db_search_results(branded_results, survey_results, custom_results),
-        "has_more": has_more
-    })
+      all_results = branded_results + survey_results + custom_results
+      all_results.sort(key=lambda x: x["adjustedScore"], reverse=True)
+
+      search_time = time.time() - start_time
+      print(f"\nSearch execution time: {search_time:.4f} seconds")
+
+      return jsonify({
+          "results": self._format_db_search_results(all_results),
+          "has_more": len(all_results) >= limit
+      })
+
 
   def food_details(self, fdc_id):
     url = f"https://api.nal.usda.gov/fdc/v1/food/{fdc_id}?api_key={self.food_api}"
@@ -254,6 +293,7 @@ class LocalAPI:
     }
 
   def add_custom_food(self, food_name, calories, serving_size=None, brand_owner=None, custom_food_category=None, ingredients=None):
+    # TODO: To proivde UI feedback
     if not food_name or not calories:
       return {"error": 'Missing required fields'}, 400
 
@@ -270,9 +310,9 @@ class LocalAPI:
 
     counter = self.db["counter"].find_one_and_update(
       {"_id": "fdc_id"},
-      {"$inc": {"sequence_value": 1}},  # Increment counter by 1
+      {"$inc": {"sequence_value": 1}},  
       return_document=ReturnDocument.AFTER,
-      upsert=True  # Create the document if it doesn't exist
+      upsert=True  
     )
 
     fdc_id = counter["sequence_value"]

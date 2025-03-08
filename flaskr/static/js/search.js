@@ -83,12 +83,12 @@ $(document).ready(function() {
     if (currentRequest) currentRequest.abort();
   
     let query = $('#searchQuery').val().trim();
-    let offset = $('.list-group-item').length; // Count existing results
+    currentPage++;
   
     currentRequest = $.ajax({
       url: '/api/search-food/',
       type: 'GET',
-      data: { query: query, offset: offset, limit: limit }, // Ensure limit is passed
+      data: { query: query, page: currentPage, limit: limit }, // Ensure limit is passed
       success: function(response) {
         if (response.results.length > 0) {
           let resultsHTML = response.results.map(item => {
