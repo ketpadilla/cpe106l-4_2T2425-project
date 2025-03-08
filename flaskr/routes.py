@@ -6,7 +6,6 @@ from .utils import login_required
 from .app import db, food_api
 from passlib.hash import pbkdf2_sha256
 
-
 local_api = LocalAPI(db, food_api)
 
 def configure_routes(app, WEB_NAME):
@@ -103,16 +102,16 @@ def configure_routes(app, WEB_NAME):
 
   @app.route("/api/add-custom-food", methods =['POST'])
   def add_custom_food():
-      data = request.get_json()
-      food_name = data.get('foodName')
-      serving_size = data.get('servingSize')
-      calories = data.get('calories')
-      brand_owner = data.get('brandOwner')
-      custom_food_category = data.get('customFoodCategory')
-      ingredients = data.get('ingredients')
+    data = request.get_json()
+    food_name = data.get('foodName')
+    serving_size = data.get('servingSize')
+    calories = data.get('calories')
+    brand_owner = data.get('brandOwner')
+    custom_food_category = data.get('customFoodCategory')
+    ingredients = data.get('ingredients')
 
-      response, status = local_api.add_custom_food(food_name, calories, serving_size, brand_owner, custom_food_category, ingredients)
-      return jsonify(response), status
+    response, status = local_api.add_custom_food(food_name, calories, serving_size, brand_owner, custom_food_category, ingredients)
+    return jsonify(response), status
 
   @app.route('/api/add-favorite', methods=['POST'])
   @login_required
@@ -141,14 +140,14 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/remove-favorite', methods=['POST'])
   @login_required
   def remove_favorite():
-      data = request.get_json()
-      fdc_id = data.get('fdcId')
-      
-      if not fdc_id:
-          return jsonify({"error": "Missing food ID"}), 400
-          
-      email = session['user']['email']
-      return User().remove_from_favorites(email, fdc_id)
+    data = request.get_json()
+    fdc_id = data.get('fdcId')
+    
+    if not fdc_id:
+      return jsonify({"error": "Missing food ID"}), 400
+        
+    email = session['user']['email']
+    return User().remove_from_favorites(email, fdc_id)
 
   @app.route("/calories/")
   @login_required
@@ -167,33 +166,28 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/get-favorites', methods=['GET'])
   @login_required
   def get_favorites():
-      email = session['user']['email']
-      user_doc = db.users.find_one({"email": email})
-      if not user_doc:
-          return jsonify({"favorites": []})
-      
-      # Get the list of favorite IDs
-      favorites = user_doc.get("favorites", [])
-      favorite_details = []
-      
-      # Get details for each favorite
-      for fdc_id in favorites:
-          # Try to find food in branded-foods collection
-          food = db.get_collection("branded-foods").find_one({"FDC ID": fdc_id})
-          if not food:
-              # Try to find in survey-foods collection
-              food = db.get_collection("survey-foods").find_one({"FDC ID": fdc_id})
-          if not food:
-              # Try to find in custom-foods collection
-              food = db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
-              
-          if food:
-              favorite_details.append({
-                  'fdcId': fdc_id,
-                  'name': food.get('Description', '').title(),
-                  'calories': food.get('Calories', 'N/A'),
-                  'serving_size': food.get('Serving Size', 'N/A'),
-                  'brand': food.get('Brand Owner', '').title() if 'Brand Owner' in food else None
-              })
-      
-      return jsonify({"favorites": favorite_details})
+    email = session['user']['email']
+    user_doc = db.users.find_one({"email": email})
+    if not user_doc:
+      return jsonify({"favorites": []})
+    
+    favorites = user_doc.get("favorites", [])
+    favorite_details = []
+    
+    for fdc_id in favorites:
+      food = db.get_collection("branded-foods").find_one({"FDC ID": fdc_id})
+      if not food:
+        food = db.get_collection("survey-foods").find_one({"FDC ID": fdc_id})
+      if not food:
+        food = db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
+          
+      if food:
+        favorite_details.append({
+          'fdcId': fdc_id,
+          'name': food.get('Description', '').title(),
+          'calories': food.get('Calories', 'N/A'),
+          'serving_size': food.get('Serving Size', 'N/A'),
+          'brand': food.get('Brand Owner', '').title() if 'Brand Owner' in food else None
+        })
+    
+    return jsonify({"favorites": favorite_details})

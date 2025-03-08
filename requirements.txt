@@ -4,3 +4,4 @@ python-dotenv
 passlib
 markupsafe 
 requests
+tabulate
