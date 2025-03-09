@@ -8,6 +8,9 @@ BUGS:
   
   
 TO DO:
+Profile:
+  - adjust custom-card-width to be responsive
+
 In Search Food:
   - alert user if item is already added into favorites
   
