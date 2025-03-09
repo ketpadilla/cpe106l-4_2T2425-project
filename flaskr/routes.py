@@ -135,61 +135,67 @@ def configure_routes(app, WEB_NAME):
     user = db.users.find_one({"email": user_email}, {"_id": 1})
 
     if not user:
-      return jsonify({"error": "User not found"}), 404
+        return jsonify({"error": "User not found"}), 404
 
     user_id = user["_id"]
     data = request.json
     fdc_id = data.get("fdcId")
 
     if not fdc_id:
-      return jsonify({"error": "Missing food ID"}), 400
+        return jsonify({"error": "Missing food ID"}), 400
 
-    # Retrieve food details
+    # Retrieve food details from multiple collections
     food = db.get_collection("branded-foods").find_one({"FDC ID": fdc_id}) or \
-          db.get_collection("survey-foods").find_one({"FDC ID": fdc_id}) or \
-          db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
+           db.get_collection("survey-foods").find_one({"FDC ID": fdc_id}) or \
+           db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
 
-    if not food or "Calories" not in food:
-      return jsonify({"error": "Food not found or missing calorie data"}), 404
+    if not food:
+        return jsonify({"error": "Food not found"}), 404
 
-    try:
-      calories_per_serving = int(food["Calories"])
-    except (ValueError, TypeError):
-      return jsonify({"error": "Invalid calorie value"}), 400
+    # If calories are missing, assign a default value or insert into DB
+    if "Calories" not in food or not isinstance(food["Calories"], (int, float)):
+        estimated_calories = 100  # Default value (can be adjusted)
+        db.get_collection("custom-foods").update_one(
+            {"FDC ID": fdc_id}, {"$set": {"Calories": estimated_calories}}, upsert=True
+        )
+        calories_per_serving = estimated_calories
+    else:
+        calories_per_serving = int(food["Calories"])
 
     today = datetime.utcnow().strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if daily_record:
-      existing_food = next((item for item in daily_record["consumed"] if item["fdcId"] == fdc_id), None)
+        existing_food = next((item for item in daily_record["consumed"] if item["fdcId"] == fdc_id), None)
 
-      if existing_food:
-          db["intake-daily"].update_one(
-              {"_id": daily_record["_id"], "consumed.fdcId": fdc_id},
-              {
-                  "$inc": {
-                      "consumed.$.servings": 1,
-                      "total_calories": calories_per_serving
-                  }
-              }
-          )
-      else:
-          db["intake-daily"].update_one(
-              {"_id": daily_record["_id"]},
-              {
-                  "$push": {"consumed": {"fdcId": fdc_id, "servings": 1}},
-                  "$inc": {"total_calories": calories_per_serving}
-              }
-          )
+        if existing_food:
+            db["intake-daily"].update_one(
+                {"_id": daily_record["_id"], "consumed.fdcId": fdc_id},
+                {
+                    "$inc": {
+                        "consumed.$.servings": 1,
+                        "total_calories": calories_per_serving
+                    }
+                }
+            )
+        else:
+            db["intake-daily"].update_one(
+                {"_id": daily_record["_id"]},
+                {
+                    "$push": {"consumed": {"fdcId": fdc_id, "servings": 1, "calories": calories_per_serving}},
+                    "$inc": {"total_calories": calories_per_serving}
+                }
+            )
     else:
         db["intake-daily"].insert_one({
             "user_id": user_id,
             "date": today,
-            "consumed": [{"fdcId": fdc_id, "servings": 1}],
+            "consumed": [{"fdcId": fdc_id, "servings": 1, "calories": calories_per_serving}],
             "total_calories": calories_per_serving
         })
 
     return jsonify({"message": "Food added successfully!", "calories_added": calories_per_serving})
+
 
   @app.route('/api/update-daily-intake/', methods=['POST'])
   @login_required
@@ -217,32 +223,34 @@ def configure_routes(app, WEB_NAME):
     # Find the food item in the consumed array
     existing_food = None
     for item in daily_record["consumed"]:
-      if item["fdcId"] == fdc_id:
-        existing_food = item
-        break
-    
+        if item["fdcId"] == fdc_id:
+            existing_food = item  # Assign the entire item, not just fdc_id
+            break
+
     if not existing_food:
         return jsonify({"error": "Food item not found"}), 404
 
-    # Get the food details from the database
-    food = db.get_collection("branded-foods").find_one({"FDC ID": fdc_id}) or \
-           db.get_collection("survey-foods").find_one({"FDC ID": fdc_id}) or \
-           db.get_collection("custom-foods").find_one({"FDC ID": fdc_id})
+    # Update the servings for the specific food item
+    existing_food["servings"] = new_servings
 
-    if not food or "Calories" not in food:
-        return jsonify({"error": "Food not found or missing calorie data"}), 404
+    # Recalculate total_calories by summing up calories * servings for all items
+    total_calories = 0
+    for item in daily_record["consumed"]:
+        food = db.get_collection("branded-foods").find_one({"FDC ID": item["fdcId"]}) or \
+               db.get_collection("survey-foods").find_one({"FDC ID": item["fdcId"]}) or \
+               db.get_collection("custom-foods").find_one({"FDC ID": item["fdcId"]})
 
-    # Calculate the calorie difference
-    old_servings = existing_food["servings"]
-    calories_per_serving = int(food["Calories"])
-    calorie_diff = (new_servings - old_servings) * calories_per_serving
+        if food and "Calories" in food:
+            total_calories += int(food["Calories"]) * item["servings"]
 
-    # Update the servings and total calories in the database
+    # Update the daily record with the new total_calories
     db["intake-daily"].update_one(
-        {"_id": daily_record["_id"], "consumed.fdcId": fdc_id},
+        {"_id": daily_record["_id"]},
         {
-            "$set": {"consumed.$.servings": new_servings},
-            "$inc": {"total_calories": calorie_diff}
+            "$set": {
+                "consumed": daily_record["consumed"],
+                "total_calories": total_calories
+            }
         }
     )
 
@@ -255,6 +263,55 @@ def configure_routes(app, WEB_NAME):
         "recommended_calories": user.get("recommended_calorie_intake", 2000),
         "consumed": updated_record.get("consumed", [])
     })
+
+  @app.route('/api/remove-daily-intake', methods=['POST'])
+  @login_required
+  def remove_daily_intake():
+    user_email = session["user"]["email"]
+    user = db.users.find_one({"email": user_email}, {"_id": 1})
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = user["_id"]
+    data = request.json
+    fdc_id = int(data.get("fdcId"))
+
+    if not fdc_id:
+        return jsonify({"error": "Invalid food ID"}), 400
+
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
+
+    if not daily_record:
+        return jsonify({"error": "Daily intake record not found"}), 404
+
+    # Find the food item in the consumed array
+    existing_food = next((item for item in daily_record["consumed"] if item["fdcId"] == fdc_id), None)
+
+    if not existing_food:
+        return jsonify({"error": "Food item not found"}), 404
+
+    # Remove the item from the consumed list
+    db["intake-daily"].update_one(
+        {"_id": daily_record["_id"]},
+        {"$pull": {"consumed": {"fdcId": fdc_id}}}
+    )
+
+    # Recalculate total calories
+    total_calories = sum(item["calories"] * item["servings"] for item in daily_record["consumed"] if item["fdcId"] != fdc_id)
+
+    # Update the total_calories field
+    db["intake-daily"].update_one(
+        {"_id": daily_record["_id"]},
+        {"$set": {"total_calories": total_calories}}
+    )
+
+    return jsonify({
+        "message": "Food item removed successfully!",
+        "new_total_calories": total_calories
+    })
+
 
   @app.route('/api/remove-favorite', methods=['POST'])
   @login_required
@@ -333,7 +390,7 @@ def configure_routes(app, WEB_NAME):
             food_entries.append({
                 "fdcId": fdc_id,
                 "name": food.get("Description", "Unknown").title(),
-                "calories": int(food.get("Calories", 0)) * servings,
+                "calories": int(food.get("Calories", 0)),
                 "servings": servings,
                 "serving_size": food.get("Serving Size", "N/A"),
                 "brand": food.get("Brand Owner", "").title() if "Brand Owner" in food else None

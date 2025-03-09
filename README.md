@@ -18,11 +18,8 @@ View Calorie History
     - total_calories
 
 Record Daily Calorie Intake
-  - Fix intake-daily.js to properly handle excess in calories
-  - Show values of consumed and remaining
-  - Fix labels on charts
-  - Implement remove-daily-intake
   - Create a new class to store intake functions
+  - Reset at next day (already automatic?)
 
 Misc:
   In-site dark mode toggle (to remove)
