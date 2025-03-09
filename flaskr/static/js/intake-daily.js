@@ -24,6 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.consumed.length === 0) {
         let noFoodModal = new bootstrap.Modal(document.getElementById("noFoodModal"));
         noFoodModal.show();
+
+        document.querySelector("#noFoodModal .btn-secondary").addEventListener("click", function () {
+          noFoodModal.hide();
+        });        
       }      
 
       let chartElement = document.getElementById("calorieChart");
