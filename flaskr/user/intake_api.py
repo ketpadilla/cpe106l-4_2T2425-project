@@ -300,3 +300,74 @@ class IntakeAPI:
 
     print("🟢 Food added successfully!")
     return jsonify({"message": "Food added successfully!", "calories_added": calories_per_serving})
+  
+  def get_history(self, email):
+    debug_border()
+    print(f"📜 Fetching intake history for {email}")
+    
+    user = db.users.find_one({"email": email}, {"_id": 1})
+    
+    if not user:
+      print("❌ User not found")
+      debug_border()
+      return jsonify({"error": "User not found"}), 404
+    
+    user_id = user["_id"]
+    history_records = db["intake-daily"].find({"user_id": user_id}).sort("date", -1)
+
+    history_list = []
+    
+    for record in history_records:
+      history_list.append({
+        "record_id": str(record["_id"]),
+        "date": record["date"],
+        "total_calories": record.get("total_calories", 0)
+      })
+
+    print(f"✅ Retrieved {len(history_list)} records")
+    debug_border()
+    
+    return jsonify({"history": history_list})
+
+  def get_record(self, email, date):
+    debug_border()
+    print(f"📅 Fetching intake record for {email} on {date}")
+
+    user = db.users.find_one({"email": email}, {"_id": 1})
+    
+    if not user:
+        print("❌ User not found")
+        debug_border()
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = user["_id"]
+    daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": date})
+
+    if not daily_record:
+        print("ℹ️ No record found for the specified date")
+        debug_border()
+        return jsonify({"error": "No record found for the specified date"}), 404
+
+    details = []
+    for item in daily_record.get("consumed", []):
+        fdc_id = item["fdcId"]
+        servings = item["servings"]
+
+        food = self._get_food(fdc_id)
+
+        if food:
+            details.append({
+                "food_name": food.get("Description", "Unknown").title(),
+                "servings": servings,
+                "base_calorie": int(food.get("Calories", 0)),
+                "total_calories": int(food.get("Calories", 0)) * servings
+            })
+
+    print(f"✅ Retrieved {len(details)} food items for {date}")
+    debug_border()
+
+    return jsonify({
+        "date": date,
+        "details": details,
+        "total_calories": daily_record.get("total_calories", 0)
+    })

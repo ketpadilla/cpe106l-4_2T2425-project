@@ -226,7 +226,20 @@ def configure_routes(app, WEB_NAME):
   def history():
     return render_template('history.html', title='View History')
   
-  #TODO: to implement
+  @app.route('/api/get-history', methods=['GET'])
+  @login_required
+  def get_history():
+      return intake_api.get_history(session["user"]["email"])
+
+  @app.route('/api/get-record', methods=['GET'])
+  @login_required
+  def get_record():
+    date = request.args.get('date')
+    if not date:
+      return jsonify({"error": "Date parameter is required"}), 400
+
+    return intake_api.get_record(session["user"]["email"], date)
+
   """
     Error Handling Pages
   """
