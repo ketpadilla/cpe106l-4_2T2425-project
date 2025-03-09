@@ -3,7 +3,7 @@ from .app import db, food_api
 from .user.models import User
 from .user.intake_api import IntakeAPI
 from .user.local_api import LocalAPI
-from .utils import login_required 
+from .utils import login_required
 
 from passlib.hash import pbkdf2_sha256
 
@@ -226,6 +226,7 @@ def configure_routes(app, WEB_NAME):
   def history():
     return render_template('history.html', title='View History')
   
+  #TODO: to implement
   """
     Error Handling Pages
   """

@@ -2,6 +2,7 @@ from flask import Flask
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
+from .utils import debug_border
 import os
 
 load_dotenv()
@@ -16,7 +17,6 @@ food_api = os.getenv("FOOD_API")
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client[database]
 
-
 @app.before_request
 def connect_to_db():
   try:
@@ -27,13 +27,13 @@ def connect_to_db():
     collections = db.list_collection_names()
 
     print()
-    print ("-" * 25)
+    debug_border()
     print("Collections in the database:", collections)
     print(f"Database Storage Size: {stats['storageSize']} bytes")
     print(f"Database Data Size: {stats['dataSize']} bytes")
     print(f"Total Documents: {stats['objects']}")
     print(f"Index Size: {stats['indexSize']} bytes")
-    print ("-" * 25, end="\n\n")
+    debug_border()
 
   except Exception as e:
     print(f"Error: {e}")
