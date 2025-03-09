@@ -13,13 +13,13 @@ function calculateBMI() {
   bmiCategoryElement.innerHTML = "Category:";
 
   if (!isMetric) {
-    weight *= 0.453592; 
-    height *= 2.54 / 100; 
+    weight /= 2.2046226218; // pounds to kg
+    height *= 0.0254; // inches to meters
   } else {
-    height /= 100;
+    height /= 100; // cm to meters
   }
 
-  if (weight > 0 && height > 0) {
+  if (weight > 0 && height > 0) { 
     const bmi = (weight / (height * height)).toFixed(2);
     bmiResultElement.innerText = bmi;
 
@@ -62,22 +62,22 @@ function toggleUnits() {
     heightLabel.innerText = "Height (cm)";
 
     if (weightInput.value) {
-      weightInput.value = (parseFloat(weightInput.value) / 0.453592).toFixed(2);
+      weightInput.value = (parseFloat(weightInput.value) / 2.2046226218).toFixed(2); // Convert lbs to kg
     }
 
     if (heightInput.value) {
-      heightInput.value = (parseFloat(heightInput.value) / 2.54).toFixed(2);
+      heightInput.value = (parseFloat(heightInput.value) / 0.3937007874).toFixed(2); // Convert in to cm
     }
   } else {
     weightLabel.innerText = "Weight (lbs)";
     heightLabel.innerText = "Height (in)";
 
     if (weightInput.value) {
-      weightInput.value = (parseFloat(weightInput.value) * 0.453592).toFixed(2); 
+      weightInput.value = (parseFloat(weightInput.value) * 2.2046226218).toFixed(2); // Convert kg to lbs
     }
 
     if (heightInput.value) {
-      heightInput.value = (parseFloat(heightInput.value) * 2.54).toFixed(2);
+      heightInput.value = (parseFloat(heightInput.value) * 0.3937007874).toFixed(2); // Convert cm to in
     }
   }
 }
