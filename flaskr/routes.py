@@ -229,7 +229,7 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/get-history', methods=['GET'])
   @login_required
   def get_history():
-      return intake_api.get_history(session["user"]["email"])
+    return intake_api.get_history(session["user"]["email"])
 
   @app.route('/api/get-record', methods=['GET'])
   @login_required
