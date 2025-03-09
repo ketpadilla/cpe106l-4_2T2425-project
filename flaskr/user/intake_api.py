@@ -3,6 +3,9 @@ from ..app import db
 from ..utils import debug_border
 from tabulate import tabulate
 from datetime import datetime
+import pytz
+
+LOCAL_TZ = datetime.now().astimezone().tzinfo
 
 class IntakeAPI:
   def __init__(self, db):
@@ -48,7 +51,7 @@ class IntakeAPI:
       return jsonify({"error": "User not found"}), 404
 
     user_id = user["_id"]
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if not daily_record or not daily_record.get("consumed"):
@@ -80,34 +83,35 @@ class IntakeAPI:
   def user_calories(self, email):
     debug_border()
     print(f"🔥 Fetching calorie intake for {email}")
+    
     user = db.users.find_one({"email": email}, {"_id": 1, "recommended_calorie_intake": 1})
     
     if not user:
-      print("❌ User not found")
-      debug_border()
-      return jsonify({"error": "User not found"}), 404
+        print("❌ User not found")
+        debug_border()
+        return jsonify({"error": "User not found"}), 404
 
     user_id = user["_id"]
     recommended_calories = user.get("recommended_calorie_intake", 2000)
 
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if not daily_record:
-      print("ℹ️ No daily calorie record found")
-      debug_border()
-      return jsonify({
-        "recommended_calories": recommended_calories,
-        "consumed": [],
-        "total_calories": 0,
-      })
+        print("ℹ️ No daily calorie record found")
+        debug_border()
+        return jsonify({
+            "recommended_calories": recommended_calories,
+            "consumed": [],
+            "total_calories": 0,
+        })
 
     print(f"✅ Total Calories Consumed: {daily_record.get('total_calories', 0)}")
     debug_border()
     return jsonify({
-      "recommended_calories": recommended_calories,
-      "consumed": daily_record.get("consumed", []),
-      "total_calories": daily_record.get("total_calories", 0),
+        "recommended_calories": recommended_calories,
+        "consumed": daily_record.get("consumed", []),
+        "total_calories": daily_record.get("total_calories", 0),
     })
   
   def remove_daily_intake(self, email):
@@ -127,7 +131,7 @@ class IntakeAPI:
       print("🔴 Invalid food ID!")
       return jsonify({"error": "Invalid food ID"}), 400
 
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if not daily_record:
@@ -181,7 +185,7 @@ class IntakeAPI:
       print("🔴 Invalid food ID or servings count!")
       return jsonify({"error": "Invalid food ID or servings count"}), 400
 
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if not daily_record:
@@ -259,7 +263,7 @@ class IntakeAPI:
     else:
       calories_per_serving = int(food["Calories"])
 
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
     daily_record = db["intake-daily"].find_one({"user_id": user_id, "date": today})
 
     if daily_record:
