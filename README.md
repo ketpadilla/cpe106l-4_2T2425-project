@@ -2,28 +2,23 @@
 Group 3's Project in partial fulfillments of CPE106L-4 for Term 2 of A.Y.2024-2025
 
 BUGS:
-  Text mute on default texts
-  Fix bmi.js (CSS is override at first access) -> double reload for temporary fix
-  In Profile: Incorrect Activity Level 
-  
+ 
   
 TO DO:
-Profile:
+*Profile*
   - adjust custom-card-width to be responsive
 
-In Search Food:
-  - alert user if item is already added into favorites
+*In Search Food*
+  - alert user (via modal) if item is already added into favorites
   
-View Calorie History
+*View Calorie History*
   - data format:
     - record_id (from _id of intake-daily)
     - date
     - total_calories
 
-Record Daily Calorie Intake
-  - Create a new class to store intake functions
-  - Reset at next day (already automatic?)
+*Record Daily Calorie Intake*
+  - Reset at next day (check if already automatic)
 
-Misc:
-  In-site dark mode toggle (to remove)
-  Add debugging statement
+*Misc*
+  - Add debugging statements

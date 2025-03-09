@@ -2,6 +2,14 @@
 
 {% block title %}User Profile{% endblock %}
 
+{% set activity_levels = {
+  'sedentary': 'Sedentary',
+  'light_activity': 'Lightly Active',
+  'moderate_activity': 'Moderately Active',
+  'very_active': 'Very Active',
+  'extremely_active': 'Extremely Active'
+} %}
+
 {% block content %}
   <div class="container py-5">
     <div class="row justify-content-center text-center mb-3">
@@ -57,15 +65,10 @@
               <span id="heightText">{{ session['user']['bmi'] | round(2) }}</span>
 
               <label class="form-label mt-2"><strong>Activity Level:</strong></label>
-              <span id="activityLevelText">{{ session['user']['activity_level'].title() }}</span> 
+              <span id="activityLevelText">
+                {{ activity_levels.get(session['user']['activity_level'].lower(), "Unknown") }}
+              </span>
               <select id="activityLevelSelect" class="form-control d-none" name="activity_level">
-                {% set activity_levels = {
-                  'sedentary': 'Sedentary',
-                  'light_activity': 'Lightly Active',
-                  'moderate_activity': 'Moderately Active',
-                  'very_active': 'Very Active',
-                  'extremely_active': 'Extremely Active'
-                } %}
                 {% for value, label in activity_levels.items() %}
                   <option value="{{ value }}" {{ "selected" if session['user']['activity_level'].lower() == value else "" }}>{{ label }}</option>
                 {% endfor %}
@@ -79,8 +82,6 @@
         </div>
       </div>
       
-      
-
       <div class="row justify-content-center mt-4">
         <div class="col-md-8 text-center">
           <button type="button" id="editButton" class="btn btn-primary w-50" onclick="enableEditing()">Edit Profile</button>
@@ -90,8 +91,6 @@
       </div>
     </form>
 
-
-  <!-- New Card -->
   <div class="container center mt-4">
     <div class="col-md-8">
       <div class="card shadow-lg custom-card-width">
