@@ -3,3 +3,6 @@ flask-PyMongo
 python-dotenv
 passlib
 markupsafe 
+requests
+tabulate
+pytz

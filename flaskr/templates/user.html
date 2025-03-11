@@ -2,6 +2,14 @@
 
 {% block title %}User Profile{% endblock %}
 
+{% set activity_levels = {
+  'sedentary': 'Sedentary',
+  'light_activity': 'Lightly Active',
+  'moderate_activity': 'Moderately Active',
+  'very_active': 'Very Active',
+  'extremely_active': 'Extremely Active'
+} %}
+
 {% block content %}
   <div class="container py-5">
     <div class="row justify-content-center text-center mb-3">
@@ -57,14 +65,18 @@
               <span id="heightText">{{ session['user']['bmi'] | round(2) }}</span>
 
               <label class="form-label mt-2"><strong>Activity Level:</strong></label>
-              <span id="activityLevelText">{{ session['user']['activity_level'].title() }}</span> 
+              <span id="activityLevelText">
+                {{ activity_levels.get(session['user']['activity_level'].lower(), "Unknown") }}
+              </span>
               <select id="activityLevelSelect" class="form-control d-none" name="activity_level">
-                <option value="sedentary" {{ "selected" if session['user']['activity_level'].lower() == "sedentary" else "" }}>Sedentary</option>
-                <option value="light_activity" {{ "selected" if session['user']['activity_level'].lower() == "lightly active" else "" }}>Lightly Active</option>
-                <option value="moderate_activity" {{ "selected" if session['user']['activity_level'].lower() == "moderately active" else "" }}>Moderately Active</option>
-                <option value="very_active" {{ "selected" if session['user']['activity_level'].lower() == "very active" else "" }}>Very Active</option>
-                <option value="extremely_active" {{ "selected" if session['user']['activity_level'].lower() == "extremely active" else "" }}>Extremely Active</option>
+                {% for value, label in activity_levels.items() %}
+                  <option value="{{ value }}" {{ "selected" if session['user']['activity_level'].lower() == value else "" }}>{{ label }}</option>
+                {% endfor %}
               </select>
+
+              <label class="form-label mt-2"><strong>Recommended Daily Calorie Intake:</strong></label>
+              <span id="recommendedCalorieIntakeText">{{ session['user']['recommended_calorie_intake'] }}</span>
+
             </div>
           </div>
         </div>
@@ -79,8 +91,42 @@
       </div>
     </form>
 
-    <p id="statusMessage" class="text-center mt-3"></p>
+  <div class="container center mt-4">
+    <div class="col-md-8">
+      <div class="card shadow-lg custom-card-width">
+        <div class="card-body">
+          <h5 class="card-title">Daily Calorie Intake Calculator</h5>
+          <hr>
+          <p id="ageDisplay" class="text-left"></p> <!-- New element for displaying age -->
+          <label class="form-label"><strong>Goal Weight (kg):</strong></label>
+          <input type="number" id="goalWeightInput" class="form-control" placeholder="Enter your goal weight">
+          <p class="text-muted small mt-2">Note: The deficit or surplus is set to 500 calories to maintain healthy weight loss or gain.</p> <!-- New note -->
+          <button type="button" id="calculateCalorieButton" class="btn btn-info w-100 mt-3" onclick="calculateCalorieIntake()">Calculate Recommended Daily Calorie Intake</button>
+          <div class="mt-3">
+            <p id="calorieResult" class="text-center"></p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <div class="container center mt-4">
+    <div class="col-md-8">
+      <div class="card shadow-lg custom-card-width">
+        <div class="card-body">
+          <h4 class="card-title">Favorites</h4>
+          <hr>
+          <!-- Favorites will be loaded here by favorite.js -->
+          <a href="/calories/" class="btn btn-secondary">See Daily Intake</a>
+        </div>
+      </div>
+    </div>
+  </div>
+          
+
+  <script src="{{ url_for('static', filename='js/age.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/calculate-calorie.js') }}"></script>
   <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/favorite.js') }}"></script>
+  
 {% endblock %}

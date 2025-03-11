@@ -7,11 +7,12 @@
   --text: #e6e3dd;
   --text-muted: #b3aea5;
   --background: #344940;
-  --primary: #669375;
-  --secondary: #6C7740;
+  --primary: #6C7740;
+  --secondary: #669375;
   --tertiary: #4b6a5c;
   --accent: #AB6A5F;  
   --dark: #2B3B30;
+  --field-bg: #171A1B;
 }
 
 /* ========================= */
@@ -54,9 +55,20 @@ a:hover {
   color: rgb(119, 195, 253);
 }
 
+hr {
+  border-width: 3px;
+  box-shadow: 0 0 20px 0 rgba(13, 18, 15, 0.25) !important;
+}
+
 .text-muted {
   color: var(--muted-color) !important;
   opacity: 0.7;
+}
+
+.list-group .list-group-item {
+  background-color: var(--field-bg) !important;
+  border: None !important;
+  color: var(--text) !important;
 }
 
 /* ========================= */
@@ -93,6 +105,18 @@ a:hover {
   border-radius: 15px;
 }
 
+.custom-card-width {
+  width: 1050px !important;  
+  margin: 0 auto;
+}
+
+.container-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 @media only screen and (max-width: 520px) {
   .card-wrapper {
     padding: 30px 0 0;
@@ -105,8 +129,58 @@ a:hover {
   }
 }
 
-@media (max-width: 2400px) {
-  .force-wrap {
-    flex-wrap: wrap !important;
-  }
+#statusMessage {
+  white-space: pre-line;
+}
+
+#message {
+  font-family: 'Sofia Sans', sans-serif;
+  display: none;
+  background: color-mix(in srgb, var(--background) 80%, black 50%);
+  box-shadow: inset 0 0 20px 0 rgba(13, 18, 15, 0.50) !important;
+  position: relative;
+  margin-bottom: 1em;
+  margin-top: 0;
+  padding: 10px;
+  padding-left: 10px;
+  border-radius: 5px;
+}
+
+#message p {
+  font-weight: 100;
+  font-size: 1em;
+  margin: 5px;
+}
+
+.valid {
+  color: green;
+}
+
+.invalid {
+  color: red;
+}
+
+/* Apply rounded corners to the entire table */
+#historyTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--dark);
+  color: var(--text);
+  width: 100%;
+}
+
+#historyTable thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+#historyTable thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+#historyTable tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+#historyTable tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }

@@ -11,3 +11,6 @@ def login_required(f):
       return redirect('/')
 
   return wrap
+
+def debug_border():
+  print("-" * 50)
