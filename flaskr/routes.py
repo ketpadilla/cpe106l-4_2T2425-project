@@ -119,7 +119,7 @@ def configure_routes(app, WEB_NAME):
     data = request.get_json()
     food_name = data.get('foodName')
     serving_size = data.get('servingSize')
-    calories = data.get('calories')
+    calories = float(data.get('calories'))
     brand_owner = data.get('brandOwner')
     custom_food_category = data.get('customFoodCategory')
     ingredients = data.get('ingredients')
