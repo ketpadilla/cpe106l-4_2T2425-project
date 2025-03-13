@@ -17,7 +17,7 @@ TrackaBite is a desktop-based diet tracking application designed to help individ
 
 To use TrackaBite, follow these steps:
 
-1. Open the application on your desktop through [trackabite.onrender.com](linkto:trackabite.onrender.com).
+1. Open the application on your desktop through [trackabite.onrender.com](trackabite.onrender.com).
 2. Create an account and log in.
 3. Enter your vital statistics (age, height, weight, activity level).
 4. Use the BMI calculator and calorie tracker to monitor your diet.
