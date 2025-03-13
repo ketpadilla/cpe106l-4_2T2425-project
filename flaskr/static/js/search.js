@@ -1,10 +1,17 @@
 $(document).ready(function() {
-  let currentRequest = null;
-  let currentPage = 1;
-  const limit = 10;
+  let currentRequest = null; // Stores the current AJAX request to prevent duplicate calls
+  let currentPage = 1; // Tracks the current page number for pagination
+  const limit = 10; // Number of results per page
 
+  /**
+   * Performs a food search based on the user's input.
+   * Handles pagination and dynamically updates the search results.
+   * @param {boolean} reset - Determines whether to reset the results or load more items.
+   */
   function performSearch(reset = true) {
     let query = $('#searchQuery').val().trim();
+
+    // If the query is empty, abort any existing request and clear results
     if (query === "") {
       if (currentRequest) currentRequest.abort();
       $('#results').empty();
@@ -17,6 +24,7 @@ $(document).ready(function() {
       currentPage = 1;
     }
 
+    // Abort any ongoing request before making a new one
     if (currentRequest) currentRequest.abort();
 
     currentRequest = $.ajax({
@@ -57,6 +65,7 @@ $(document).ready(function() {
         }
         $('#results').html(resultsHTML);
 
+        // Handle "View More" button for pagination
         if (response.has_more) {
           if (!$('#viewMoreContainer').length) {
             $('#results').after(`
@@ -69,16 +78,18 @@ $(document).ready(function() {
           $('#viewMoreContainer').remove();
         } 
       },
-      error: function(xhr, status, error) {
+      error: function(xhr, status) {
         if (status !== "abort") $('#results').html("<p>Failed to retrieve data</p>");
       }
     });
   }
 
+  // Trigger search when the user types in the search field
   $('#searchQuery').on('input', function() {
     performSearch(true);
   });
 
+  // Handle "View More" button click for pagination
   $(document).on('click', '#viewMoreBtn', function() {
     if (currentRequest) currentRequest.abort();
   
@@ -88,7 +99,7 @@ $(document).ready(function() {
     currentRequest = $.ajax({
       url: '/api/search-food/',
       type: 'GET',
-      data: { query: query, page: currentPage, limit: limit }, // Ensure limit is passed
+      data: { query: query, page: currentPage, limit: limit },
       success: function(response) {
         if (response.results.length > 0) {
           let resultsHTML = response.results.map(item => {
@@ -126,11 +137,13 @@ $(document).ready(function() {
       }
     });
   });
-  
+
+  // Redirect users to the login page when they attempt to add items without being logged in
   $(document).on('click', '.lock-login', function() {
     window.location.href = '/sign-in/';
   });
 
+  // Handles adding a food item to the user's favorites
   $(document).on('click', '.add-to-favorites', function() {
     let fdcId = $(this).data('fdcid');
     let button = $(this);
@@ -149,64 +162,21 @@ $(document).ready(function() {
     });
   });
 
+  // Handles adding a food item to the user's daily intake
   $(document).on("click", ".add-to-daily-intake", function () {
     let fdcId = $(this).data("fdcid");
     let button = $(this);
 
     $.ajax({
-        url: "/api/add-daily-intake",
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify({ fdcId: fdcId }),
-        success: function (response) {
-            if (response.error) {
-                alert("Error: " + response.error);
-                return;
-            }
-            
-            button.text("✔ Added to Intake").prop("disabled", true);
-
-            alert("Food added! Calories: " + response.calories_added);
-
-            if (window.location.pathname.includes("calories.html")) {
-                location.reload();
-            }
-        },
-        error: function (xhr) {
-            let errorMessage = "Failed to add to daily intake.";
-            if (xhr.responseJSON && xhr.responseJSON.error) {
-                errorMessage = xhr.responseJSON.error;
-            }
-            alert(errorMessage);
+      url: "/api/add-daily-intake",
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ fdcId: fdcId }),
+      success: function (response) {
+        if (response.error) {
+          alert("Error: " + response.error);
+          return;
         }
-      });
-  });
-
-  $(document).on('click', '.learn-more', function() {
-    let fdcId = $(this).data('fdcid');
-    $('#foodModalBody').html("<p>Loading details...</p>");
-    
-    $.ajax({
-      url: `/api/food-details/${fdcId}`,
-      type: 'GET',
-      success: function(response) {
-        $('#foodModalBody').html(`
-          <h5>${response.name}</h5>
-          <p><strong>Calories:</strong> ${response.calories} kcal</p>
-          <p><strong>Serving Size:</strong> ${response.serving_size}</p>
-          <p><strong>Macronutrients:</strong></p>
-          <ul>
-            <li>Protein: ${response.protein}g</li>
-            <li>Carbs: ${response.carbs}g</li>
-            <li>Fats: ${response.fats}g</li>
-          </ul>
-        `);
-      },
-      error: function() {
-        $('#foodModalBody').html("<p>Failed to load food details.</p>");
-      }
-    });
-
-    $('#foodModal').modal('show');
-  });
-});
+        
+        button.text("✔ Added to Intake").prop("disabled", true);
+        alert("Food added! Calories: "
