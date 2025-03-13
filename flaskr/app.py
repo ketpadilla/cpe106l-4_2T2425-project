@@ -1,3 +1,9 @@
+"""Trackabite Flask Application.
+
+This module initializes a Flask application, connects to a MongoDB database,
+and configures routes for the Trackabite web application.
+"""
+
 from flask import Flask
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -19,6 +25,18 @@ db = client[database]
 
 @app.before_request
 def connect_to_db():
+  """Connect to the MongoDB database and log connection details.
+
+  This function is executed before every request to ensure the application
+  is connected to the MongoDB database. It pings the database to confirm
+  the connection and logs statistics about the database, including storage
+  size, data size, total documents, and index size.
+
+  Raises:
+    Exception: If the connection to the database fails, an error message
+      is printed to the console.
+  """
+    
   try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -42,5 +60,10 @@ from .routes import configure_routes
 configure_routes(app, WEB_NAME='Trackabite')
 
 if __name__ == "__main__":
+    """Run the Flask application in debug mode.
+
+    This block ensures the Flask application runs in debug mode when the script
+    is executed directly. Debug mode provides detailed error messages and
+    automatic reloading during development.
+    """
     app.run(debug=True)
-# %%

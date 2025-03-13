@@ -6,11 +6,39 @@ from tabulate import tabulate
 from ..utils import debug_border
 
 class LocalAPI:
+  """API for managing local food database operations.
+
+  This class provides methods to search the local food database, fetch food details,
+  and add custom food items.
+
+  Args:
+    db (Database): The MongoDB database instance.
+    food_api (str): The API key for accessing external food data.
+  """
   def __init__(self, db, food_api):
+    """Initialize the LocalAPI with a database instance and API key.
+
+      Args:
+        db (Database): The MongoDB database instance.
+        food_api (str): The API key for accessing external food data.
+      """
     self.db = db
     self.food_api = food_api
 
   def _atlas_search(self, collection, index_name, weight, query, page, limit):
+    """Perform a search on the specified MongoDB collection using Atlas Search.
+
+      Args:
+        collection (str): The name of the MongoDB collection to search.
+        index_name (str): The name of the Atlas Search index.
+        weight (float): The weight to apply to the search results.
+        query (str): The search query.
+        page (int): The page number for pagination.
+        limit (int): The number of results per page.
+
+      Returns:
+        list: A list of search results.
+      """
     start_time = time.time()
     
     search_conditions = {
@@ -58,6 +86,11 @@ class LocalAPI:
     return results
   
   def search_database(self):
+    """Search the local food database for matching food items.
+
+    Returns:
+      str: JSON response containing the search results.
+    """
     query = request.args.get('query', '').strip()
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
@@ -105,6 +138,14 @@ class LocalAPI:
     return jsonify({"results": formatted_results, "has_more": len(all_results) >= limit})
 
   def food_details(self, fdc_id):
+    """Fetch detailed information for a specific food item using its FDC ID.
+
+    Args:
+      fdc_id (str): The FDC ID of the food item.
+
+    Returns:
+      str: JSON response containing the food details.
+    """
     url = f"https://api.nal.usda.gov/fdc/v1/food/{fdc_id}?api_key={self.food_api}"
 
     debug_border()
@@ -130,6 +171,14 @@ class LocalAPI:
       return jsonify({'error': f'API request failed: {e}'}), 500
 
   def _format_db_search_results(self, results):
+    """Format the search results from the local database.
+
+    Args:
+      results (list): A list of search results.
+
+    Returns:
+      list: A list of formatted search results.
+    """
     formatted = [
       {
         'id': str(result['_id']),
@@ -144,6 +193,14 @@ class LocalAPI:
     return formatted
 
   def _format_usda_food_details(self, data):
+    """Format the food details from the USDA API.
+
+    Args:
+      data (dict): The raw food details from the USDA API.
+
+    Returns:
+      dict: A dictionary containing formatted food details.
+    """
     nutrients = {
       nutrient.get('nutrient', {}).get('name'): nutrient.get('amount')
       for nutrient in data.get('foodNutrients', [])
@@ -161,6 +218,19 @@ class LocalAPI:
     }
 
   def add_custom_food(self, food_name, calories, serving_size=None, brand_owner=None, custom_food_category=None, ingredients=None):
+    """Add a custom food item to the local database.
+
+      Args:
+        food_name (str): The name of the food item.
+        calories (int): The calorie count of the food item.
+        serving_size (str, optional): The serving size of the food item.
+        brand_owner (str, optional): The brand owner of the food item.
+        custom_food_category (str, optional): The category of the custom food item.
+        ingredients (str, optional): The ingredients of the food item.
+
+      Returns:
+        tuple: A tuple containing a response message and status code.
+    """
     if not food_name or not calories:
       return {"error": 'Missing required fields'}, 400
 

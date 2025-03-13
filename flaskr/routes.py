@@ -11,11 +11,29 @@ local_api = LocalAPI(db, food_api)
 intake_api = IntakeAPI(db)
 
 def configure_routes(app, WEB_NAME):
+  """Configure all routes for the Flask application.
+
+  This function sets up all the routes for the application, including user management,
+  food search, favorites, daily calorie tracking, and history.
+
+  Args:
+    app (Flask): The Flask application instance.
+    WEB_NAME (str): The name of the web application, used for page titles.
+  """
+
   """
     Landing Page
   """
   @app.route("/")
   def index(page_title = WEB_NAME):
+    """Render the landing page.
+
+    Args:
+      page_title (str): The title of the page, defaults to the web application name.
+
+    Returns:
+      str: Rendered HTML template for the landing page.
+    """
     return render_template('index.html', title=page_title)
   
   """
@@ -23,6 +41,11 @@ def configure_routes(app, WEB_NAME):
   """
   @app.route("/bmi-calculator/")
   def bmi_calculator():
+    """Render the BMI calculator page.
+
+    Returns:
+      str: Rendered HTML template for the BMI calculator page.
+    """
     return render_template('bmi.html', title='BMI Calculator')
   
   """
@@ -30,6 +53,14 @@ def configure_routes(app, WEB_NAME):
   """
   @app.route("/sign-in/", methods=['GET', 'POST'])
   def login():
+    """Handle user login.
+
+    If the request method is POST, attempt to log the user in. If successful,
+    redirect to the user's profile page. Otherwise, display an error message.
+
+    Returns:
+      str: Rendered HTML template for the sign-in page or a redirect to the profile page.
+    """
     if request.method == 'POST':
       result = User().sign_in()
       if result[1] == 401:
@@ -39,6 +70,14 @@ def configure_routes(app, WEB_NAME):
 
   @app.route("/sign-up/", methods=['GET', 'POST'])
   def register():
+    """Handle user registration.
+
+    If the request method is POST, attempt to register the user. If successful,
+    redirect to the landing page. Otherwise, display an error message.
+
+    Returns:
+      str: Rendered HTML template for the sign-up page or a redirect to the landing page.
+    """
     if request.method == 'POST':
       result = User().sign_up()
       if result[1] == 400:
@@ -48,6 +87,14 @@ def configure_routes(app, WEB_NAME):
   
   @app.route("/forgot-password/", methods = ['GET', 'POST'])
   def forgot_password():
+    """Handle password reset requests.
+
+    If the request method is POST, validate the email and new password. If valid,
+    update the user's password and display a success message.
+
+    Returns:
+      str: Rendered HTML template for the forgot password page.
+    """
     if request.method == 'POST':
       email = request.form['email']
       new_password = request.form['new_password']
@@ -70,23 +117,48 @@ def configure_routes(app, WEB_NAME):
 
   @app.route("/sign-out/")
   def logout():
+    """Handle user logout.
+
+    Logs the user out and redirects to the landing page.
+
+    Returns:
+      str: Redirect to the landing page.
+    """
     User().sign_out()
     return redirect(url_for('index'))
     
   @app.route("/user/<username>/")
   @login_required
   def profile(username):
+    """Render the user's profile page.
+
+    Args:
+      username (str): The username of the profile to display.
+
+    Returns:
+      str: Rendered HTML template for the user's profile page.
+    """
     return render_template('user.html', title=f"{username}'s Profile", username=username)
 
   @app.route("/update-profile/", methods=['POST'])
   @login_required
   def update_profile():
+    """Update the user's profile information.
+
+    Returns:
+      str: Redirect to the user's profile page.
+    """
     User().update_profile()
     return redirect(url_for('profile', username=session['user']['name']))
 
   @app.route("/update-calorie-intake/", methods=['POST'])
   @login_required
   def update_calories():
+    """Update the user's recommended calorie intake.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.get_json()
     recommended_calorie_intake = data.get('recommended_calorie_intake')
 
@@ -104,22 +176,45 @@ def configure_routes(app, WEB_NAME):
   """
   @app.route("/search-food/", methods=['GET'])
   def search_food():
+    """Render the food search page.
+
+    Returns:
+      str: Rendered HTML template for the food search page.
+    """
     return render_template('food.html', title='Search Food')
 
   @app.route("/api/search-food/", methods=['GET'])
   def api_search_food():
+    """Search for food items in the database.
+
+    Returns:
+      str: JSON response containing search results.
+    """
     return local_api.search_database()
 
   @app.route("/api/food-details/<fdc_id>", methods=['GET'])
   def food_details(fdc_id):
+    """Get details for a specific food item.
+
+    Args:
+      fdc_id (str): The FDC ID of the food item.
+
+    Returns:
+      str: JSON response containing food details.
+    """
     return local_api.food_details(fdc_id)
 
   @app.route("/api/add-custom-food", methods =['POST'])
   def add_custom_food():
+    """Add a custom food item to the database.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.get_json()
     food_name = data.get('foodName')
     serving_size = data.get('servingSize')
-    calories = data.get('calories')
+    calories = float(data.get('calories'))
     brand_owner = data.get('brandOwner')
     custom_food_category = data.get('customFoodCategory')
     ingredients = data.get('ingredients')
@@ -133,6 +228,11 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/add-favorite', methods=['POST'])
   @login_required
   def add_favorite():
+    """Add a food item to the user's favorites.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.get_json()
     fdc_id = data.get('fdcId')
 
@@ -145,6 +245,11 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/remove-favorite', methods=['POST'])
   @login_required
   def remove_favorite():
+    """Remove a food item from the user's favorites.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.get_json()
     fdc_id = data.get('fdcId')
     
@@ -157,6 +262,11 @@ def configure_routes(app, WEB_NAME):
   @app.route('/api/get-favorites', methods=['GET'])
   @login_required
   def get_favorites():
+    """Get the user's favorite food items.
+
+    Returns:
+      str: JSON response containing the user's favorites.
+    """
     email = session['user']['email']
     user_doc = db.users.find_one({"email": email})
     if not user_doc:
@@ -189,33 +299,63 @@ def configure_routes(app, WEB_NAME):
   @app.route("/calories/")
   @login_required
   def calories():
+    """Render the daily calorie intake page.
+
+    Returns:
+      str: Rendered HTML template for the daily calorie intake page.
+    """
     return render_template('calories.html', title='Daily Calorie Intake')
   
   @app.route('/api/add-daily-intake', methods=['POST'])
   @login_required
   def add_daily_intake():
+    """Add a daily intake record for the user.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.json
     return intake_api.add_daily_intake(session["user"]["email"], data)
   
   @app.route('/api/update-daily-intake/', methods=['POST'])
   @login_required
   def update_daily_intake():
+    """Update the user's daily intake record.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     data = request.json
     return intake_api.update_daily_intake(session["user"]["email"], data)
 
   @app.route('/api/remove-daily-intake', methods=['POST'])
   @login_required
   def remove_daily_intake():
+    """Remove the user's daily intake record.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     return intake_api.remove_daily_intake(session["user"]["email"])
 
   @app.route("/api/user-calories", methods=["GET"])
   @login_required
   def user_calories():
+    """Get the user's calorie intake data.
+
+    Returns:
+      str: JSON response containing the user's calorie intake data.
+    """
     return intake_api.user_calories(session["user"]["email"])
   
   @app.route('/api/get-daily-intake', methods=['GET'])
   @login_required
   def get_daily_intake():
+    """Get the user's daily intake data.
+
+    Returns:
+      str: JSON response containing the user's daily intake data.
+    """
     return intake_api.get_daily_intake(session["user"]["email"])
 
   """
@@ -224,16 +364,31 @@ def configure_routes(app, WEB_NAME):
   @app.route("/history/")
   @login_required
   def history():
+    """Render the intake history page.
+
+    Returns:
+      str: Rendered HTML template for the intake history page.
+    """
     return render_template('history.html', title='View History')
   
   @app.route('/api/get-history', methods=['GET'])
   @login_required
   def get_history():
+    """Get the user's intake history.
+
+    Returns:
+      str: JSON response containing the user's intake history.
+    """
     return intake_api.get_history(session["user"]["email"])
 
   @app.route('/api/get-record', methods=['GET'])
   @login_required
   def get_record():
+    """Get a specific intake record for the user.
+
+    Returns:
+      str: JSON response containing the intake record.
+    """
     date = request.args.get('date')
     if not date:
       return jsonify({"error": "Date parameter is required"}), 400
@@ -245,4 +400,12 @@ def configure_routes(app, WEB_NAME):
   """
   @app.errorhandler(404)
   def page_not_found(error):
+    """Render the 404 error page.
+
+    Args:
+      error (Exception): The error object.
+
+    Returns:
+      str: Rendered HTML template for the 404 error page.
+    """
     return render_template('page-not-found.html', title = '404'), 404

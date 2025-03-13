@@ -5,7 +5,20 @@ from ..app import db
 from ..utils import debug_border
 
 class User:
+  """Class for managing user-related operations.
+
+  This class handles user authentication, profile management, and interactions with the database.
+  """
+  
   def start_session(self, user):
+    """Start a session for the user.
+
+      Args:
+        user (dict): The user data to store in the session.
+
+      Returns:
+        tuple: A tuple containing the JSON response and status code.
+      """
     debug_border()
     print("🔑 Starting session for user:", user["email"])
     debug_border()
@@ -18,6 +31,11 @@ class User:
     return jsonify(user_copy), 200
 
   def sign_up(self):
+    """Register a new user.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     valid_object_id = str(ObjectId())
     weight = float(request.form.get('weight', 0))
     height = float(request.form.get('height', 0))
@@ -53,6 +71,11 @@ class User:
     return {"error": "Signup failed"}, 400
 
   def sign_in(self):
+    """Authenticate a user.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     debug_border()
     print("🔑 User Sign-In Attempt")
     print(f"Email: {request.form.get('email')}")
@@ -68,6 +91,7 @@ class User:
     return {"error": "Invalid email or password"}, 401
 
   def sign_out(self):
+    """End the user's session."""
     debug_border()
     print("🚪 User signed out")
     debug_border()
@@ -75,6 +99,14 @@ class User:
     session.clear()
 
   def find_by_email(self, email):
+    """Find a user by their email.
+
+    Args:
+      email (str): The email of the user to find.
+
+    Returns:
+      dict: The user data if found, otherwise None.
+    """
     debug_border()
     print(f"🔍 Searching for user by email: {email}")
     debug_border()
@@ -82,6 +114,15 @@ class User:
     return db.users.find_one({"email": email})
 
   def update_password(self, email, new_password):
+    """Update the user's password.
+
+    Args:
+      email (str): The email of the user.
+      new_password (str): The new password to set.
+
+    Returns:
+      bool: True if the password was updated, otherwise False.
+    """
     debug_border()
     print(f"🔑 Updating password for: {email}")
     debug_border()
@@ -97,6 +138,15 @@ class User:
     return result.modified_count > 0
 
   def update_calorie_intake(self, email, recommended_calorie_intake):
+    """Update the user's recommended calorie intake.
+
+    Args:
+      email (str): The email of the user.
+      recommended_calorie_intake (float): The recommended calorie intake.
+
+    Returns:
+      bool: True if the calorie intake was updated, otherwise False.
+    """
     try:
       recommended_calorie_intake = float(recommended_calorie_intake)
 
@@ -122,6 +172,11 @@ class User:
       return False
 
   def update_profile(self):
+    """Update the user's profile information.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     user = session.get("user", {})
     email = user["email"]
 
@@ -151,6 +206,15 @@ class User:
     return jsonify({"message": "No changes detected."}), 200
 
   def _calculate_bmi(self, weight, height):
+    """Calculate the BMI based on weight and height.
+
+    Args:
+      weight (float): The weight of the user.
+      height (float): The height of the user.
+
+    Returns:
+      float: The calculated BMI.
+    """
     bmi = weight / ((height / 100) ** 2) if weight > 0 and height > 0 else None
     debug_border()
     print(f"⚖️ Calculating BMI: {bmi}")
@@ -158,6 +222,15 @@ class User:
     return bmi
 
   def add_to_favorites(self, email, fdc_id):
+    """Add a food item to the user's favorites.
+
+    Args:
+      email (str): The email of the user.
+      fdc_id (str): The FDC ID of the food item.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     debug_border()
     print(f"⭐ Adding {fdc_id} to favorites for {email}")
     debug_border()
@@ -177,6 +250,14 @@ class User:
     return jsonify({"message": "Added to favorites successfully"}), 200
   
   def get_favorites(self, email):
+    """Retrieve the user's favorite food items.
+
+    Args:
+      email (str): The email of the user.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     debug_border()
     print(f"📌 Retrieving favorites for {email}")
     debug_border()
@@ -202,6 +283,15 @@ class User:
     return jsonify({"favorites": favorites_details}), 200
 
   def remove_from_favorites(self, email, fdc_id):
+    """Remove a food item from the user's favorites.
+
+    Args:
+      email (str): The email of the user.
+      fdc_id (str): The FDC ID of the food item.
+
+    Returns:
+      tuple: A tuple containing the JSON response and status code.
+    """
     debug_border()
     print(f"🗑️ Removing {fdc_id} from favorites for {email}")
     debug_border()
