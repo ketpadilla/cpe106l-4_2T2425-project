@@ -8,10 +8,31 @@ import pytz
 LOCAL_TZ = datetime.now().astimezone().tzinfo
 
 class IntakeAPI:
+  """API for managing daily calorie intake and food records.
+
+  This class provides methods to add, update, remove, and retrieve daily food intake records
+  for users. It also handles fetching food details and calculating total calories.
+
+  Args:
+    db (Database): The MongoDB database instance.
+  """
   def __init__(self, db):
+    """Initialize the IntakeAPI with a database instance.
+
+      Args:
+        db (Database): The MongoDB database instance.
+    """
     self.db = db
 
   def _get_food(self, fdc_id):
+    """Retrieve food details from the database using the FDC ID.
+
+      Args:
+        fdc_id (int): The FDC ID of the food item.
+
+      Returns:
+        dict: The food details if found, otherwise None.
+      """
     debug_border()
     print(f"🔎 Searching for food with FDC ID: {fdc_id}")
 
@@ -28,6 +49,11 @@ class IntakeAPI:
     return food
   
   def _debug_food_entries(self, food_entries):
+    """Print a formatted table of food entries for debugging purposes.
+
+      Args:
+        food_entries (list): A list of food entries to display.
+      """
     if not food_entries:
       print("ℹ️ No food entries to display.")
       return
@@ -41,6 +67,14 @@ class IntakeAPI:
     debug_border()
 
   def get_daily_intake(self, email):
+    """Retrieve the daily food intake for a user.
+
+      Args:
+        email (str): The email of the user.
+
+      Returns:
+        str: JSON response containing the user's daily food intake.
+    """
     debug_border()
     print(f"📩 Fetching daily intake for {email}")
     user = db.users.find_one({"email": email}, {"_id": 1})
@@ -81,6 +115,14 @@ class IntakeAPI:
     return jsonify({"foods": food_entries})
 
   def user_calories(self, email):
+    """Retrieve the user's calorie intake and recommended calories.
+
+    Args:
+      email (str): The email of the user.
+
+    Returns:
+      str: JSON response containing the user's calorie intake and recommended calories.
+    """
     debug_border()
     print(f"🔥 Fetching calorie intake for {email}")
     
@@ -115,6 +157,14 @@ class IntakeAPI:
     })
   
   def remove_daily_intake(self, email):
+    """Remove a food item from the user's daily intake.
+
+      Args:
+        email (str): The email of the user.
+
+      Returns:
+        str: JSON response indicating success or failure.
+    """
     print("🟢 Entering remove_daily_intake")
 
     user = db.users.find_one({"email": email}, {"_id": 1, "recommended_calorie_intake": 1})
@@ -169,6 +219,15 @@ class IntakeAPI:
     })
   
   def update_daily_intake(self, email, data):
+    """Update the servings of a food item in the user's daily intake.
+
+    Args:
+      email (str): The email of the user.
+      data (dict): The data containing the FDC ID and new servings count.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     print("🟢 Entering update_daily_intake")
 
     user = db.users.find_one({"email": email}, {"_id": 1, "recommended_calorie_intake": 1})
@@ -231,6 +290,15 @@ class IntakeAPI:
     })
 
   def add_daily_intake(self, email, data):
+    """Add a food item to the user's daily intake.
+
+    Args:
+      email (str): The email of the user.
+      data (dict): The data containing the FDC ID of the food item.
+
+    Returns:
+      str: JSON response indicating success or failure.
+    """
     print("🟢 Entering add_daily_intake")
 
     user = db.users.find_one({"email": email}, {"_id": 1})
@@ -252,7 +320,6 @@ class IntakeAPI:
       print(f"🔴 Food with FDC ID {fdc_id} not found!")
       return jsonify({"error": "Food not found"}), 404
 
-    # Handle missing calorie information
     if "Calories" not in food or not isinstance(food["Calories"], (int, float)):
       estimated_calories = 100
       print(f"🟡 Assigning estimated calories ({estimated_calories}) to FDC ID {fdc_id}")
@@ -302,6 +369,14 @@ class IntakeAPI:
     return jsonify({"message": "Food added successfully!", "calories_added": calories_per_serving})
   
   def get_history(self, email):
+    """Retrieve the user's intake history.
+
+    Args:
+      email (str): The email of the user.
+
+    Returns:
+      str: JSON response containing the user's intake history.
+    """
     debug_border()
     print(f"📜 Fetching intake history for {email}")
     
@@ -330,6 +405,15 @@ class IntakeAPI:
     return jsonify({"history": history_list})
 
   def get_record(self, email, date):
+    """Retrieve a specific intake record for the user.
+
+    Args:
+      email (str): The email of the user.
+      date (str): The date of the record in YYYY-MM-DD format.
+
+    Returns:
+      str: JSON response containing the intake record details.
+    """
     debug_border()
     print(f"📅 Fetching intake record for {email} on {date}")
 
