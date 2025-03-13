@@ -1,10 +1,15 @@
 let calorieChart;
 
+/**
+ * Initializes the application by fetching user calorie data and rendering UI components.
+ */
 document.addEventListener("DOMContentLoaded", function () {
+  // Fetch user calorie data
   fetch("/api/user-calories")
     .then((response) => response.json())
     .then((data) => {
       if (!data.error) {
+        // Display total and recommended calorie intake
         document.getElementById("consumedCalories").textContent = data.total_calories;
         document.getElementById("recommendedCalories").textContent = data.recommended_calories;
       }
@@ -21,17 +26,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       document.getElementById("consumedCalories").textContent = consumedCalories;
 
+      // Show a modal if no food entries are recorded for today
       if (data.consumed.length === 0) {
         let noFoodModal = new bootstrap.Modal(document.getElementById("noFoodModal"));
         noFoodModal.show();
 
         document.querySelector("#noFoodModal .btn-secondary").addEventListener("click", function () {
           noFoodModal.hide();
-        });        
-      }      
+        });
+      }
 
       let chartElement = document.getElementById("calorieChart");
 
+      // Render the calorie chart using Chart.js
       if (chartElement) {
         calorieChart = new Chart(chartElement.getContext("2d"), {
           type: "doughnut",
@@ -51,12 +58,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
+      // Fetch daily food intake and update the UI
       fetch("/api/get-daily-intake")
         .then((response) => response.json())
         .then((data) => {
           let foodList = document.getElementById("food-list-today");
           foodList.innerHTML = "";
 
+          // If no food entries exist, display a message
           if (data.foods.length === 0) {
             foodList.innerHTML = "<p class='text-muted'>No food entries for today.</p>";
             return;
@@ -64,11 +73,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
           let expectedMealCalories = recommendedCalories / 3;
 
+          // Populate the food list with recorded food items
           data.foods.forEach((food) => {
             let servings = food.servings || 1;
             let baseCalories = food.calories;
             let totalCalories = baseCalories * servings;
 
+            // Determine calorie class for styling
             let calorieClass = "text-success";
             if (totalCalories > expectedMealCalories * 1.2) {
               calorieClass = "text-danger";
@@ -97,6 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             foodList.appendChild(foodItem);
           });
 
+          // Attach event listeners to servings input fields
           document.querySelectorAll(".servings-input").forEach((input) => {
             input.addEventListener("input", function () {
               let fdcId = this.getAttribute("data-fdcid");
@@ -111,6 +123,13 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => console.error("Error loading calorie data:", error));
 });
 
+/**
+ * Updates the servings of a food item and recalculates calorie intake.
+ * 
+ * @param {string} fdcId - Food ID.
+ * @param {number} newServings - Updated servings.
+ * @param {number} baseCalories - Base calories per serving.
+ */
 function updateServings(fdcId, newServings, baseCalories) {
   fetch("/api/update-daily-intake/", {
     method: "POST",
@@ -124,11 +143,13 @@ function updateServings(fdcId, newServings, baseCalories) {
         return;
       }
 
+      // Update total calories displayed for the specific food
       let totalCaloriesElementForFood = document.getElementById(`total-calories-${fdcId}`);
       let totalCaloriesForFood = newServings * baseCalories;
       if (totalCaloriesElementForFood) {
         totalCaloriesElementForFood.textContent = `${totalCaloriesForFood} kcal`;
 
+        // Update calorie class based on intake levels
         let recommendedCalories = data.recommended_calories;
         let expectedMealCalories = recommendedCalories / 3;
         let calorieClass = "text-success";
@@ -145,16 +166,20 @@ function updateServings(fdcId, newServings, baseCalories) {
     .catch((error) => console.error("Error updating servings:", error));
 }
 
+/**
+ * Updates the calorie intake display and recalculates the chart.
+ * 
+ * @param {number} newConsumedCalories - Updated calorie intake.
+ * @param {number} recommendedCalories - Recommended calorie intake.
+ */
 function updateConsumedCaloriesDisplay(newConsumedCalories, recommendedCalories) {
   let consumedCaloriesElement = document.getElementById("consumedCalories");
-  
+
   if (consumedCaloriesElement) {
     consumedCaloriesElement.textContent = newConsumedCalories;
 
-    // Remove previous classes
     consumedCaloriesElement.classList.remove("text-success", "text-warning", "text-danger");
 
-    // Determine new class based on calorie intake
     let percentage = (newConsumedCalories / recommendedCalories) * 100;
     if (percentage <= 100) {
       consumedCaloriesElement.classList.add("text-success");
@@ -172,49 +197,4 @@ function updateConsumedCaloriesDisplay(newConsumedCalories, recommendedCalories)
     calorieChart.data.datasets[0].data = [newConsumedCalories, remainingCalories, exceededCalories];
     calorieChart.update();
   }
-}
-
-function removeFood(fdcId, button) {
-  fetch("/api/remove-daily-intake", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fdcId: fdcId }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.error) {
-        console.error("Error removing food:", data.error);
-        return;
-      }
-
-      // Remove the item from UI
-      let foodItem = button.closest(".d-flex.justify-content-between");
-      if (foodItem) {
-        foodItem.remove();
-      }
-
-      // Check if food list is now empty and show a message
-      let foodList = document.getElementById("food-list-today");
-      if (!foodList.querySelector(".d-flex.justify-content-between")) {
-        foodList.innerHTML = "<p class='text-muted'>No food entries for today.</p>";
-      }
-
-      // Fetch updated calorie data from /api/user-calories
-      fetch("/api/user-calories")
-        .then((response) => response.json())
-        .then((caloriesData) => {
-          if (caloriesData.error) {
-            console.error("Error fetching updated calorie data:", caloriesData.error);
-            return;
-          }
-
-          // Update the calorie display and chart with the latest values
-          updateConsumedCaloriesDisplay(
-            caloriesData.total_calories,
-            caloriesData.recommended_calories
-          );
-        })
-        .catch((error) => console.error("Error fetching user calories:", error));
-    })
-    .catch((error) => console.error("Error removing food:", error));
 }
